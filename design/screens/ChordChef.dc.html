@@ -1,0 +1,147 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Chord Chef game</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@700;800;900&display=swap" rel="stylesheet">
+<style>
+body{margin:0}
+a{color:#5A3FD9}a:hover{color:#2A2550}
+button{font-family:inherit;cursor:pointer}
+</style>
+</helmet>
+<div style="width: 1194px; height: 834px; position: relative; overflow: hidden; background: #FFF6E9; font-family: 'Nunito', ui-rounded, system-ui, sans-serif; color: #2A2550">
+
+<div style="position: absolute; left: 0; right: 0; bottom: 0; height: 236px; background: #F4D7A1; border-top: 5px solid #2A2550"></div>
+<div style="position: absolute; left: 0; right: 0; bottom: 228px; height: 14px; background: #E8C285"></div>
+
+<div style="position: absolute; left: 32px; right: 32px; top: 24px; display: flex; align-items: center; justify-content: space-between">
+<button aria-label="Pause" style="width: 76px; height: 76px; border-radius: 38px; background: #FFFFFF; border: 4px solid #2A2550; box-shadow: 0 6px 0 #2A2550; display: flex; align-items: center; justify-content: center; padding: 0">
+<svg width="30" height="30" viewBox="0 0 24 24" aria-hidden="true"><rect x="5" y="4" width="5" height="16" rx="2" fill="#2A2550"/><rect x="14" y="4" width="5" height="16" rx="2" fill="#2A2550"/></svg>
+</button>
+<div style="display: flex; flex-direction: column; align-items: center; gap: 8px">
+<div style="font-size: 30px; font-weight: 900">Chord Chef</div>
+<div style="font-size: 18px; font-weight: 800; color: #6E6A93">Order 3 of 8</div>
+</div>
+<div style="width: 76px"></div>
+</div>
+
+<div style="position: absolute; left: 40px; top: 130px; width: 330px; display: flex; flex-direction: column; align-items: center; gap: 0">
+<svg width="150" height="170" viewBox="0 0 120 136" role="img" aria-label="Bop wearing a chef hat">
+<path d="M34 34 a16 16 0 0 1 12 -26 a18 18 0 0 1 28 0 a16 16 0 0 1 12 26 Z" fill="#FFFFFF" stroke="#2A2550" stroke-width="4" stroke-linejoin="round"/>
+<rect x="34" y="28" width="52" height="14" rx="4" fill="#FFFFFF" stroke="#2A2550" stroke-width="4"/>
+<ellipse cx="60" cy="130" rx="36" ry="5" fill="#2A2550" opacity="0.15"/>
+<rect x="12" y="40" width="96" height="86" rx="40" fill="#5A3FD9" stroke="#2A2550" stroke-width="4"/>
+<rect x="12" y="34" width="96" height="84" rx="40" fill="#7B5CFF" stroke="#2A2550" stroke-width="4"/>
+<circle cx="42" cy="64" r="10" fill="#FFFFFF" stroke="#2A2550" stroke-width="3"/><circle cx="44" cy="66" r="4.5" fill="#2A2550"/>
+<circle cx="78" cy="64" r="10" fill="#FFFFFF" stroke="#2A2550" stroke-width="3"/><circle cx="80" cy="66" r="4.5" fill="#2A2550"/>
+<circle cx="27" cy="82" r="6" fill="#FF8FB1" opacity="0.85"/><circle cx="93" cy="82" r="6" fill="#FF8FB1" opacity="0.85"/>
+<circle cx="60" cy="94" r="16" fill="#2A2550"/><circle cx="60" cy="94" r="10" fill="#4B3FA0"/><circle cx="60" cy="94" r="4" fill="#A99BFF"/>
+</svg>
+<div style="width: 300px; background: #FFFFFF; border: 4px solid #2A2550; border-radius: 32px; box-shadow: 0 7px 0 #2A2550; padding: 20px; display: flex; flex-direction: column; align-items: center; gap: 14px; margin-top: 8px">
+<div style="font-size: 22px; font-weight: 900">Order up! Cook me...</div>
+<div style="display: flex; align-items: center; gap: 14px">
+<div style="width: 120px; height: 90px; border-radius: 24px; background: #FF5A5F; border: 4px solid #2A2550; box-shadow: 0 5px 0 #C9363B; display: flex; align-items: center; justify-content: center">
+<svg width="60" height="60" viewBox="0 0 60 60" aria-hidden="true"><circle cx="30" cy="30" r="14" fill="#FFD447" stroke="#2A2550" stroke-width="3"/><path d="M30 6 v6 M30 48 v6 M6 30 h6 M48 30 h6 M13 13 l4 4 M43 43 l4 4 M13 47 l4 -4 M43 17 l4 -4" stroke="#2A2550" stroke-width="3" stroke-linecap="round"/><circle cx="25.5" cy="28" r="2" fill="#2A2550"/><circle cx="34.5" cy="28" r="2" fill="#2A2550"/><path d="M24.5 33 q5.5 5 11 0" fill="none" stroke="#2A2550" stroke-width="2.5" stroke-linecap="round"/></svg>
+</div>
+<div style="display: flex; flex-direction: column">
+<span style="font-size: 30px; font-weight: 900">C major</span>
+<span style="font-size: 18px; font-weight: 800; color: #6E6A93">a sunny chord</span>
+</div>
+</div>
+<button style="height: 64px; padding: 0 26px; border-radius: 32px; background: #7B5CFF; border: 4px solid #2A2550; box-shadow: 0 5px 0 #5A3FD9; display: flex; align-items: center; gap: 10px; color: #FFFFFF; font-size: 22px; font-weight: 900">
+<svg width="28" height="28" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 9 h4 l5 -4 v14 l-5 -4 h-4 Z" fill="#FFFFFF"/><path d="M16 8.5 a5 5 0 0 1 0 7 M18.5 6 a8.5 8.5 0 0 1 0 12" fill="none" stroke="#FFFFFF" stroke-width="2" stroke-linecap="round"/></svg>Hear it</button>
+</div>
+</div>
+
+<div style="position: absolute; left: 440px; top: 128px; width: 380px; display: flex; justify-content: space-between">
+<sc-for list="{{slots}}" as="s" hint-placeholder-count="3">
+<div style="display: flex; flex-direction: column; align-items: center; gap: 8px">
+<div style="{{s.box}}">
+<sc-if value="{{s.filled}}" hint-placeholder-val="{{true}}">
+<svg width="52" height="52" viewBox="0 0 40 40" aria-hidden="true"><path d="{{s.d}}" fill="#FFFFFF" opacity="0.85"/></svg>
+</sc-if>
+<sc-if value="{{s.empty}}" hint-placeholder-val="{{false}}"><span style="font-size: 44px; font-weight: 900; color: #6E6A93">?</span></sc-if>
+</div>
+<span style="font-size: 20px; font-weight: 900">{{s.label}}</span>
+<span style="font-size: 16px; font-weight: 800; color: #6E6A93">{{s.role}}</span>
+</div>
+</sc-for>
+</div>
+
+<svg width="420" height="260" viewBox="0 0 420 260" aria-hidden="true" style="position: absolute; left: 420px; top: 330px">
+<g fill="none" stroke="#2A2550" stroke-width="4" stroke-linecap="round" opacity="0.5">
+<path d="M150 36 q-10 -16 0 -30 M210 30 q-10 -16 0 -30 M270 36 q-10 -16 0 -30"/>
+</g>
+<rect x="10" y="78" width="40" height="22" rx="11" fill="#6E6A93" stroke="#2A2550" stroke-width="4"/>
+<rect x="370" y="78" width="40" height="22" rx="11" fill="#6E6A93" stroke="#2A2550" stroke-width="4"/>
+<path d="M40 70 H380 V170 a60 60 0 0 1 -60 60 H100 a60 60 0 0 1 -60 -60 Z" fill="#4D8DFF" stroke="#2A2550" stroke-width="5" stroke-linejoin="round"/>
+<path d="M40 70 H380 V100 H40 Z" fill="#3A6FD6" stroke="#2A2550" stroke-width="5"/>
+<ellipse cx="210" cy="70" rx="174" ry="22" fill="#FFF0C7" stroke="#2A2550" stroke-width="5"/>
+<circle cx="160" cy="62" r="24" fill="#FF5A5F" stroke="#2A2550" stroke-width="4"/>
+<rect x="236" y="42" width="40" height="40" rx="8" fill="#FFD23F" stroke="#2A2550" stroke-width="4" transform="rotate(12 256 62)"/>
+<circle cx="120" cy="140" r="10" fill="#FFFFFF" opacity="0.5"/><circle cx="300" cy="160" r="7" fill="#FFFFFF" opacity="0.5"/>
+</svg>
+
+<div style="position: absolute; right: 48px; top: 400px; display: flex; flex-direction: column; align-items: center; gap: 12px">
+<button disabled aria-disabled="true" style="width: 220px; height: 100px; border-radius: 36px; background: #E2DDF5; border: 4px solid #6E6A93; box-shadow: 0 6px 0 #6E6A93; color: #2A2550; font-size: 34px; font-weight: 900; display: flex; align-items: center; justify-content: center; gap: 10px">Cook!</button>
+<span style="font-size: 18px; font-weight: 800; color: #2A2550">Add 1 more note</span>
+</div>
+
+<div style="position: absolute; left: 0; right: 0; bottom: 48px; display: flex; justify-content: center; gap: 16px">
+<sc-for list="{{pads}}" as="p" hint-placeholder-count="7">
+<button aria-label="{{p.aria}}" style="{{p.style}}">
+<svg width="56" height="56" viewBox="0 0 40 40" aria-hidden="true"><path d="{{p.d}}" fill="#FFFFFF" stroke="#2A2550" stroke-width="2.5" stroke-linejoin="round"/></svg>
+<span style="font-size: 26px; font-weight: 900; color: #2A2550; line-height: 1">{{p.name}}</span>
+</button>
+</sc-for>
+</div>
+
+<div style="position: absolute; left: 846px; top: 520px; display: flex; align-items: center; gap: 8px; transform: rotate(-4deg)">
+<div style="background: #FFFFFF; border: 3px solid #2A2550; border-radius: 18px; padding: 8px 14px; font-size: 18px; font-weight: 900; box-shadow: 0 4px 0 #2A2550">Drag a note into the pot</div>
+</div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1194,"height":834}}'>
+class Component extends DCLogic {
+  renderVals() {
+    const S = {
+      circle: 'M20 6 a14 14 0 1 0 0.01 0 Z',
+      triangle: 'M20 5 L35 32 L5 32 Z',
+      square: 'M7 7 H33 V33 H7 Z',
+      diamond: 'M20 3 L37 20 L20 37 L3 20 Z',
+      hexagon: 'M20 3 L35 11.5 L35 28.5 L20 37 L5 28.5 L5 11.5 Z',
+      star: 'M20 3 L25 14 L37 15.5 L28 23.5 L30.5 35.5 L20 29.5 L9.5 35.5 L12 23.5 L3 15.5 L15 14 Z',
+      heart: 'M20 35 C8 27 3 20 3 13.5 C3 8.5 7 5 11.5 5 C15 5 18 7 20 10 C22 7 25 5 28.5 5 C33 5 37 8.5 37 13.5 C37 20 32 27 20 35 Z'
+    };
+    const notes = [
+      { name: 'C', color: '#FF5A5F', lip: '#C9363B', d: S.circle },
+      { name: 'D', color: '#FF9A3C', lip: '#D06F17', d: S.triangle },
+      { name: 'E', color: '#FFD23F', lip: '#D2A515', d: S.square },
+      { name: 'F', color: '#3DD68C', lip: '#21A867', d: S.diamond },
+      { name: 'G', color: '#22C3C9', lip: '#13979C', d: S.hexagon, hint: true },
+      { name: 'A', color: '#4D8DFF', lip: '#2F68D1', d: S.star },
+      { name: 'B', color: '#A66BFF', lip: '#7E45D6', d: S.heart }
+    ];
+    const pads = notes.map((n) => ({
+      ...n,
+      aria: 'Note ' + n.name + (n.hint ? ', hint' : ''),
+      style: 'width: 120px; height: 132px; border-radius: 30px; background: ' + n.color + '; border: 4px solid #2A2550; box-shadow: 0 7px 0 ' + n.lip + (n.hint ? ', 0 0 0 10px #FFF6E9, 0 0 0 16px #FFD447; transform: translateY(-28px) rotate(-6deg);' : ';') + ' display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 6px; padding: 0'
+    }));
+    const box = (bg, border) => 'width: 96px; height: 96px; border-radius: 28px; display: flex; align-items: center; justify-content: center; background: ' + bg + '; border: 4px ' + border + ' #2A2550;';
+    const slots = [
+      { label: 'C', role: 'root', filled: true, empty: false, d: S.circle, box: box('#FF5A5F', 'solid') + ' box-shadow: 0 5px 0 #C9363B;' },
+      { label: 'E', role: 'third', filled: true, empty: false, d: S.square, box: box('#FFD23F', 'solid') + ' box-shadow: 0 5px 0 #D2A515;' },
+      { label: '?', role: 'fifth', filled: false, empty: true, d: '', box: box('#FFFFFF', 'dashed') }
+    ];
+    return { pads, slots };
+  }
+}
+</script>
+</body>
+</html>

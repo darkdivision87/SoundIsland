@@ -1,0 +1,135 @@
+{
+  "schemaVersion": 1,
+  "skills": [
+    {
+      "skillNode": "rhythm.steady_pulse", "island": "beat_beach", "concept": "Steady pulse and tempo",
+      "ageBands": ["sprouts", "explorers", "makers"], "prereqs": [], "game": "crab_tap",
+      "tiers": [
+        {"tier": 1, "bpm": 70, "beats": 16},
+        {"tier": 2, "bpm": 90, "beats": 16},
+        {"tier": 3, "bpm": 80, "changeToBpm": 100, "beats": 16, "stopAtEnd": true}
+      ],
+      "mastery": {"correctOf": [4, 5], "sessions": 2}, "studioContribution": "beat_box.unlock"
+    },
+    {
+      "skillNode": "rhythm.quarter_notes", "island": "beat_beach", "concept": "Quarter notes and rests",
+      "ageBands": ["sprouts", "explorers", "makers"], "prereqs": ["rhythm.steady_pulse"], "game": "wave_rider",
+      "tiers": [
+        {"tier": 1, "bpm": 72, "bars": 1, "values": ["q"], "notation": false},
+        {"tier": 2, "bpm": 80, "bars": 1, "values": ["q", "qr"], "notation": false},
+        {"tier": 3, "bpm": 88, "bars": 2, "values": ["q", "qr"], "notation": true}
+      ],
+      "mastery": {"correctOf": [4, 5], "sessions": 2}, "studioContribution": null
+    },
+    {
+      "skillNode": "rhythm.eighth_notes", "island": "beat_beach", "concept": "Eighth notes",
+      "ageBands": ["explorers", "makers"], "prereqs": ["rhythm.quarter_notes"], "game": "wave_rider",
+      "tiers": [
+        {"tier": 1, "bpm": 72, "bars": 1, "values": ["q", "8"], "notation": false},
+        {"tier": 2, "bpm": 84, "bars": 2, "values": ["q", "8", "qr"], "notation": false},
+        {"tier": 3, "bpm": 96, "bars": 2, "values": ["q", "8", "qr", "8r"], "notation": true}
+      ],
+      "mastery": {"correctOf": [4, 5], "sessions": 2}, "studioContribution": "beat_box.eighth_hats"
+    },
+    {
+      "skillNode": "rhythm.copy_patterns", "island": "beat_beach", "concept": "Copy and create rhythm patterns",
+      "ageBands": ["sprouts", "explorers", "makers"], "prereqs": ["rhythm.quarter_notes"], "game": "drum_circle",
+      "tiers": [
+        {"tier": 1, "beats": 2, "drums": 1},
+        {"tier": 2, "beats": 4, "drums": 2},
+        {"tier": 3, "beats": 4, "drums": 3, "bars": 1}
+      ],
+      "mastery": {"correctOf": [3, 4], "sessions": 2}, "studioContribution": "beat_box.kits"
+    },
+    {
+      "skillNode": "pitch.high_low", "island": "pitch_peaks", "concept": "High and low",
+      "ageBands": ["sprouts", "explorers", "makers"], "prereqs": [], "game": "bird_song",
+      "tiers": [
+        {"tier": 1, "intervalSemitones": 12},
+        {"tier": 2, "intervalSemitones": 7},
+        {"tier": 3, "intervalSemitones": 2}
+      ],
+      "mastery": {"correctOf": [8, 10], "sessions": 2}, "studioContribution": null
+    },
+    {
+      "skillNode": "pitch.steps_skips", "island": "pitch_peaks", "concept": "Steps and skips, contour",
+      "ageBands": ["explorers", "makers"], "prereqs": ["pitch.high_low"], "game": "pitch_climb",
+      "tiers": [
+        {"tier": 1, "mode": "direction"},
+        {"tier": 2, "mode": "stepOrSkip"},
+        {"tier": 3, "mode": "exactRung"}
+      ],
+      "mastery": {"correctOf": [8, 10], "sessions": 2}, "studioContribution": null
+    },
+    {
+      "skillNode": "pitch.note_names", "island": "pitch_peaks", "concept": "Note names on the keyboard",
+      "ageBands": ["explorers", "makers"], "prereqs": ["pitch.high_low"], "game": "key_hunt",
+      "tiers": [
+        {"tier": 1, "notes": ["C", "D", "E"]},
+        {"tier": 2, "notes": ["C", "D", "E", "F", "G", "A", "B"]},
+        {"tier": 3, "notes": ["C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B"]}
+      ],
+      "mastery": {"correctOf": [10, 10], "sessions": 1}, "studioContribution": "keys.unlock"
+    },
+    {
+      "skillNode": "melody.call_response", "island": "melody_jungle", "concept": "Call and response",
+      "ageBands": ["sprouts", "explorers", "makers"], "prereqs": ["pitch.high_low"], "game": "echo_monkeys",
+      "tiers": [
+        {"tier": 1, "length": 3, "scale": "majorPentatonic"},
+        {"tier": 2, "length": 4, "scale": "major"},
+        {"tier": 3, "length": 6, "scale": "major", "rhythm": true}
+      ],
+      "mastery": {"correctOf": [4, 5], "sessions": 2}, "studioContribution": null
+    },
+    {
+      "skillNode": "melody.scales_home", "island": "melody_jungle", "concept": "Scales and the home note",
+      "ageBands": ["explorers", "makers"], "prereqs": ["pitch.steps_skips"], "game": "vine_swing",
+      "tiers": [
+        {"tier": 1, "scale": "majorPentatonic", "tonic": "C"},
+        {"tier": 2, "scale": "major", "tonic": "C"},
+        {"tier": 3, "scale": "major", "tonics": ["G", "F"]}
+      ],
+      "mastery": {"correctOf": [5, 5], "sessions": 2}, "studioContribution": null
+    },
+    {
+      "skillNode": "melody.compose", "island": "melody_jungle", "concept": "Composing a melody",
+      "ageBands": ["sprouts", "explorers", "makers"], "prereqs": ["melody.call_response"], "game": "melody_paint",
+      "tiers": [
+        {"tier": 1, "maxNotes": 5},
+        {"tier": 2, "maxNotes": 8, "endOnHome": true},
+        {"tier": 3, "phrases": 2, "callResponse": true}
+      ],
+      "mastery": {"correctOf": [1, 1], "sessions": 1}, "studioContribution": "melody_maker.unlock"
+    },
+    {
+      "skillNode": "harmony.triads", "island": "harmony_harbor", "concept": "Building triads",
+      "ageBands": ["explorers", "makers"], "prereqs": ["pitch.note_names"], "game": "chord_chef",
+      "tiers": [
+        {"tier": 1, "mode": "missingFifth"},
+        {"tier": 2, "mode": "buildFromRoot"},
+        {"tier": 3, "mode": "majorOrMinor"}
+      ],
+      "mastery": {"correctOf": [8, 10], "sessions": 2}, "studioContribution": "chord_pads.unlock"
+    },
+    {
+      "skillNode": "harmony.major_minor", "island": "harmony_harbor", "concept": "Major vs. minor mood",
+      "ageBands": ["sprouts", "explorers", "makers"], "prereqs": ["pitch.high_low"], "game": "mood_boats",
+      "tiers": [
+        {"tier": 1, "material": "triads"},
+        {"tier": 2, "material": "progressions"},
+        {"tier": 3, "material": "melodies"}
+      ],
+      "mastery": {"correctOf": [8, 10], "sessions": 2}, "studioContribution": null
+    },
+    {
+      "skillNode": "harmony.progressions", "island": "harmony_harbor", "concept": "I-IV-V-vi progressions",
+      "ageBands": ["explorers", "makers"], "prereqs": ["harmony.triads"], "game": "stack_attack",
+      "tiers": [
+        {"tier": 1, "length": 2},
+        {"tier": 2, "length": 4},
+        {"tier": 3, "length": 4, "create": true}
+      ],
+      "mastery": {"correctOf": [3, 4], "sessions": 2}, "studioContribution": "chord_pads.loops"
+    }
+  ]
+}

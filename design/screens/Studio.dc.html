@@ -1,0 +1,200 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Studio Beat Box</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@700;800;900&display=swap" rel="stylesheet">
+<style>
+body{margin:0}
+a{color:#5A3FD9}a:hover{color:#2A2550}
+button{font-family:inherit;cursor:pointer}
+</style>
+</helmet>
+<div style="width: 1194px; height: 834px; position: relative; overflow: hidden; background: #FFF6E9; font-family: 'Nunito', ui-rounded, system-ui, sans-serif; color: #2A2550">
+
+<div style="position: absolute; left: 32px; right: 32px; top: 24px; height: 84px; display: flex; align-items: center; gap: 16px">
+<button aria-label="Back to map" style="width: 76px; height: 76px; border-radius: 38px; background: #FFFFFF; border: 4px solid #2A2550; box-shadow: 0 6px 0 #2A2550; display: flex; align-items: center; justify-content: center; padding: 0; flex-shrink: 0">
+<svg width="34" height="34" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 11 L12 4 L20 11 V20 H14 V14 H10 V20 H4 Z" fill="none" stroke="#2A2550" stroke-width="2.4" stroke-linejoin="round"/></svg>
+</button>
+<button aria-label="{{playLabel}}" onClick="{{togglePlay}}" style="width: 100px; height: 76px; border-radius: 30px; background: #2ECC8F; border: 4px solid #2A2550; box-shadow: 0 6px 0 #1E9A6A; display: flex; align-items: center; justify-content: center; padding: 0; flex-shrink: 0">
+<sc-if value="{{playing}}" hint-placeholder-val="{{false}}"><svg width="34" height="34" viewBox="0 0 24 24" aria-hidden="true"><rect x="5" y="5" width="14" height="14" rx="3" fill="#2A2550"/></svg></sc-if>
+<sc-if value="{{stopped}}" hint-placeholder-val="{{true}}"><svg width="36" height="36" viewBox="0 0 24 24" aria-hidden="true"><path d="M7 4.5 L19.5 12 L7 19.5 Z" fill="#2A2550" stroke="#2A2550" stroke-width="2" stroke-linejoin="round"/></svg></sc-if>
+</button>
+<div style="display: flex; align-items: center; gap: 10px; background: #FFFFFF; border: 4px solid #2A2550; border-radius: 30px; padding: 0 16px; height: 68px; flex-shrink: 0">
+<svg width="34" height="34" viewBox="0 0 40 40" role="img" aria-label="Slow"><ellipse cx="18" cy="24" rx="12" ry="8" fill="#3DD68C" stroke="#2A2550" stroke-width="3"/><circle cx="33" cy="22" r="4.5" fill="#3DD68C" stroke="#2A2550" stroke-width="3"/><path d="M10 31 v3 M26 31 v3" stroke="#2A2550" stroke-width="3" stroke-linecap="round"/></svg>
+<div style="position: relative; width: 130px; height: 14px; border-radius: 7px; background: #EDE7FF; border: 3px solid #2A2550">
+<div style="position: absolute; left: 0; top: 0; bottom: 0; width: 55%; border-radius: 7px; background: #7B5CFF"></div>
+<div style="position: absolute; left: 62px; top: -12px; width: 32px; height: 32px; border-radius: 16px; background: #FFFFFF; border: 4px solid #2A2550"></div>
+</div>
+<svg width="34" height="34" viewBox="0 0 40 40" role="img" aria-label="Fast"><ellipse cx="20" cy="26" rx="11" ry="8" fill="#FFFFFF" stroke="#2A2550" stroke-width="3"/><circle cx="30" cy="18" r="6" fill="#FFFFFF" stroke="#2A2550" stroke-width="3"/><path d="M29 12 L27 3 M33 12 L34 3" stroke="#2A2550" stroke-width="3" stroke-linecap="round"/></svg>
+</div>
+<button style="height: 68px; padding: 0 18px; border-radius: 30px; background: #FFD23F; border: 4px solid #2A2550; box-shadow: 0 5px 0 #D2A515; display: flex; align-items: center; gap: 8px; color: #2A2550; font-size: 20px; font-weight: 900; flex-shrink: 0">
+<svg width="28" height="28" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="5" fill="#FFFFFF" stroke="#2A2550" stroke-width="2"/><path d="M12 2 v3 M12 19 v3 M2 12 h3 M19 12 h3 M5 5 l2 2 M17 17 l2 2 M5 19 l2 -2 M17 7 l2 -2" stroke="#2A2550" stroke-width="2" stroke-linecap="round"/></svg>Sunny C</button>
+<div role="tablist" aria-label="Song sections" style="display: flex; gap: 8px; flex-shrink: 0">
+<sc-for list="{{sections}}" as="s" hint-placeholder-count="4"><button role="tab" aria-selected="{{s.sel}}" aria-label="{{s.aria}}" style="{{s.style}}">{{s.name}}</button></sc-for>
+</div>
+<div style="flex: 1"></div>
+<button style="height: 76px; padding: 0 20px; border-radius: 30px; background: #7B5CFF; border: 4px solid #2A2550; box-shadow: 0 6px 0 #5A3FD9; display: flex; align-items: center; gap: 8px; color: #FFFFFF; font-size: 22px; font-weight: 900; flex-shrink: 0">
+<svg width="28" height="28" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 20 h18 M5 20 V9 l7 -5 7 5 v11" fill="none" stroke="#FFFFFF" stroke-width="2.2" stroke-linejoin="round"/><path d="M12 10 l1.3 2.7 3 .4 -2.2 2 .5 3 -2.6 -1.4 -2.6 1.4 .5 -3 -2.2 -2 3 -.4 Z" fill="#FFD447"/></svg>Concert</button>
+</div>
+
+<nav aria-label="Tracks" style="position: absolute; left: 32px; top: 136px; width: 120px; display: flex; flex-direction: column; gap: 14px">
+<sc-for list="{{tracks}}" as="t" hint-placeholder-count="4">
+<button aria-label="{{t.aria}}" style="{{t.style}}">
+<svg width="56" height="56" viewBox="0 0 56 56" aria-hidden="true"><circle cx="28" cy="28" r="24" fill="{{t.color}}" stroke="#2A2550" stroke-width="3.5"/><circle cx="21" cy="25" r="3.2" fill="#2A2550"/><circle cx="35" cy="25" r="3.2" fill="#2A2550"/><path d="M21 34 q7 6 14 0" fill="none" stroke="#2A2550" stroke-width="3" stroke-linecap="round"/></svg>
+<span style="font-size: 18px; font-weight: 900; color: #2A2550">{{t.name}}</span>
+</button>
+</sc-for>
+</nav>
+
+<div style="position: absolute; left: 176px; top: 136px; width: 986px; display: flex; flex-direction: column; gap: 16px">
+<div style="background: #FFFFFF; border: 4px solid #2A2550; border-radius: 36px; box-shadow: 0 7px 0 #2A2550; padding: 18px; display: flex; flex-direction: column; gap: 14px">
+<div style="display: flex; align-items: center; justify-content: space-between; padding: 0 4px">
+<span style="font-size: 26px; font-weight: 900">Beat Box</span>
+<span style="font-size: 18px; font-weight: 800; color: #6E6A93">Tap a box to add a sound</span>
+</div>
+<sc-for list="{{rows}}" as="r" hint-placeholder-count="4">
+<div style="display: flex; align-items: center; gap: 12px">
+<button aria-label="{{r.aria}}" style="{{r.labelStyle}}">
+<svg width="28" height="28" viewBox="0 0 24 24" aria-hidden="true"><path d="{{r.icon}}" fill="none" stroke="#2A2550" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
+</button>
+<div style="display: flex; gap: 12px">
+<sc-for list="{{r.groups}}" as="g" hint-placeholder-count="4">
+<div style="display: flex; gap: 4px">
+<sc-for list="{{g.cells}}" as="c" hint-placeholder-count="4">
+<button aria-label="{{c.aria}}" aria-pressed="{{c.on}}" onClick="{{c.toggle}}" style="{{c.style}}"></button>
+</sc-for>
+</div>
+</sc-for>
+</div>
+</div>
+</sc-for>
+</div>
+
+<div style="display: flex; align-items: center; gap: 10px; flex-wrap: wrap">
+<span style="font-size: 20px; font-weight: 900; margin-right: 4px">Kit:</span>
+<sc-for list="{{kits}}" as="k" hint-placeholder-count="6"><button aria-pressed="{{k.sel}}" onClick="{{k.pick}}" style="{{k.style}}">{{k.name}}</button></sc-for>
+<div style="flex: 1"></div>
+<button onClick="{{surprise}}" style="height: 64px; padding: 0 20px; border-radius: 28px; background: #FFD447; border: 4px solid #2A2550; box-shadow: 0 5px 0 #D2A515; display: flex; align-items: center; gap: 8px; color: #2A2550; font-size: 20px; font-weight: 900">
+<svg width="26" height="26" viewBox="0 0 40 40" aria-hidden="true"><path d="M20 3 L25 14 L37 15.5 L28 23.5 L30.5 35.5 L20 29.5 L9.5 35.5 L12 23.5 L3 15.5 L15 14 Z" fill="#FFFFFF" stroke="#2A2550" stroke-width="3" stroke-linejoin="round"/></svg>Surprise me</button>
+</div>
+
+<div style="display: flex; align-items: center; gap: 12px; background: #EDE7FF; border: 4px solid #2A2550; border-radius: 30px; padding: 12px 16px">
+<span style="font-size: 20px; font-weight: 900; margin-right: 6px">My song</span>
+<div style="height: 64px; width: 200px; border-radius: 20px; background: #7B5CFF; border: 4px solid #2A2550; display: flex; align-items: center; padding: 0 14px; gap: 8px; color: #FFFFFF; font-size: 20px; font-weight: 900">A <span style="font-size: 16px; font-weight: 800">4 bars</span></div>
+<div style="height: 64px; width: 200px; border-radius: 20px; background: #FFFFFF; border: 4px solid #2A2550; display: flex; align-items: center; padding: 0 14px; gap: 8px; color: #2A2550; font-size: 20px; font-weight: 900">B <span style="font-size: 16px; font-weight: 800; color: #6E6A93">4 bars</span></div>
+<div style="height: 64px; width: 200px; border-radius: 20px; background: #FFFFFF; border: 4px solid #2A2550; display: flex; align-items: center; padding: 0 14px; gap: 8px; color: #2A2550; font-size: 20px; font-weight: 900">A <span style="font-size: 16px; font-weight: 800; color: #6E6A93">repeat</span></div>
+<button aria-label="Add a section" style="height: 64px; width: 64px; border-radius: 20px; background: #FFFFFF; border: 4px dashed #2A2550; display: flex; align-items: center; justify-content: center; padding: 0">
+<svg width="28" height="28" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5 v14 M5 12 h14" stroke="#2A2550" stroke-width="3" stroke-linecap="round"/></svg>
+</button>
+</div>
+</div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1194,"height":834}}'>
+class Component extends DCLogic {
+  constructor(props) {
+    super(props);
+    const on = (list) => Array.from({ length: 16 }, (_, i) => list.includes(i));
+    this.state = {
+      grid: [on([0, 6, 8, 10]), on([4, 12]), on([0, 2, 4, 6, 8, 10, 12, 14]), on([12, 14])],
+      step: 4,
+      playing: false,
+      kit: 'Pop'
+    };
+  }
+  componentWillUnmount() { if (this.timer) clearInterval(this.timer); }
+  renderVals() {
+    const self = this;
+    const st = this.state;
+    const meta = [
+      { name: 'Kick', color: '#FF5A5F', off: '#FFE0E1', icon: 'M5 12 a7 7 0 1 0 14 0 a7 7 0 1 0 -14 0 M9.5 12 a2.5 2.5 0 1 0 5 0 a2.5 2.5 0 1 0 -5 0' },
+      { name: 'Snare', color: '#FFD23F', off: '#FFF4CC', icon: 'M4 9 h16 v7 h-16 Z M4 9 l4 7 M10 9 l4 7 M16 9 l4 7' },
+      { name: 'Hi-hat', color: '#22C3C9', off: '#D4F3F4', icon: 'M3 10 h18 M12 10 v10 M7 7 q5 -4 10 0' },
+      { name: 'Clap', color: '#A66BFF', off: '#EDE1FF', icon: 'M12 3 v4 M12 17 v4 M3 12 h4 M17 12 h4 M6 6 l3 3 M15 15 l3 3 M6 18 l3 -3 M15 9 l3 -3' }
+    ];
+    const rows = meta.map((m, ri) => {
+      const groups = [0, 1, 2, 3].map((g) => ({
+        cells: [0, 1, 2, 3].map((k) => {
+          const i = g * 4 + k;
+          const isOn = st.grid[ri][i];
+          const head = i === st.step;
+          let s = 'width: 50px; height: 50px; border-radius: 14px; padding: 0; border: 3px solid ' + (isOn ? '#2A2550' : 'rgba(42,37,80,0.25)') + '; background: ' + (isOn ? m.color : m.off) + ';';
+          if (isOn) s += ' box-shadow: 0 4px 0 #2A2550;';
+          if (head) s += ' outline: 4px solid #7B5CFF; outline-offset: 2px;';
+          if (head && isOn) s += ' transform: scale(1.08);';
+          return {
+            on: isOn,
+            style: s,
+            aria: m.name + ' step ' + (i + 1) + (isOn ? ', on' : ', off'),
+            toggle: () => {
+              const grid = self.state.grid.map((r) => r.slice());
+              grid[ri][i] = !grid[ri][i];
+              self.setState({ grid });
+            }
+          };
+        })
+      }));
+      return {
+        groups,
+        aria: 'Hear ' + m.name,
+        icon: m.icon,
+        labelStyle: 'width: 52px; height: 52px; border-radius: 26px; background: ' + m.color + '; border: 3px solid #2A2550; display: flex; align-items: center; justify-content: center; padding: 0; flex-shrink: 0'
+      };
+    });
+    const tracks = [
+      { name: 'Beats', color: '#FF5A5F', active: true },
+      { name: 'Bass', color: '#C7CFDD', locked: true },
+      { name: 'Chords', color: '#4D8DFF' },
+      { name: 'Melody', color: '#FFD23F' }
+    ].map((t) => ({
+      ...t,
+      aria: t.name + ' track' + (t.locked ? ', locked, unlock on Bass Caves' : '') + (t.active ? ', selected' : ''),
+      style: 'width: 120px; height: 120px; border-radius: 32px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; padding: 0; border: 4px solid #2A2550; background: ' + (t.active ? '#FFFFFF' : '#FFF6E9') + '; box-shadow: ' + (t.active ? '0 6px 0 #2A2550, inset 0 0 0 4px #7B5CFF' : '0 6px 0 #2A2550') + ';' + (t.locked ? ' opacity: 0.6;' : '')
+    }));
+    const sections = ['A', 'B', 'C', 'D'].map((n, i) => ({
+      name: n,
+      sel: i === 0,
+      aria: 'Section ' + n,
+      style: 'width: 60px; height: 64px; border-radius: 20px; border: 4px solid #2A2550; font-size: 24px; font-weight: 900; padding: 0; ' + (i === 0 ? 'background: #2A2550; color: #FFFFFF;' : 'background: #FFFFFF; color: #2A2550;')
+    }));
+    const kits = ['Pop', 'Hip-hop', 'Electronic', 'Rock', 'Silly', 'World'].map((n) => ({
+      name: n,
+      sel: st.kit === n,
+      pick: () => self.setState({ kit: n }),
+      style: 'height: 56px; padding: 0 18px; border-radius: 28px; border: 4px solid #2A2550; font-size: 18px; font-weight: 900; ' + (st.kit === n ? 'background: #2A2550; color: #FFFFFF;' : 'background: #FFFFFF; color: #2A2550;')
+    }));
+    const togglePlay = () => {
+      if (self.state.playing) {
+        clearInterval(self.timer);
+        self.timer = null;
+        self.setState({ playing: false });
+      } else {
+        self.timer = setInterval(() => self.setState({ step: (self.state.step + 1) % 16 }), 150);
+        self.setState({ playing: true });
+      }
+    };
+    const surprise = () => {
+      const grid = [0, 1, 2, 3].map((r) => Array.from({ length: 16 }, (_, i) => {
+        if (r === 0) return i % 4 === 0 || Math.random() < 0.12;
+        if (r === 1) return i === 4 || i === 12;
+        if (r === 2) return i % 2 === 0 || Math.random() < 0.2;
+        return (i === 12) || Math.random() < 0.08;
+      }));
+      self.setState({ grid });
+    };
+    return {
+      rows, tracks, sections, kits, togglePlay, surprise,
+      playing: st.playing, stopped: !st.playing,
+      playLabel: st.playing ? 'Stop' : 'Play'
+    };
+  }
+}
+</script>
+</body>
+</html>
