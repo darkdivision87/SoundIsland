@@ -8,7 +8,7 @@ You are continuing a handoff. Read this file, then `docs/SPEC.md`, then look at 
 ## Build state (2026-11-15)
 
 The code now compiles cleanly (no warnings) with Xcode 27.2 / Swift 6.4 in Swift 6 mode, `swift test` passes
-(39 tests), and the app runs in the iPad Pro 11-inch (M5) simulator. The first pass needed no concurrency fixes.
+(44 tests), and the app runs in the iPad Pro 11-inch (M5) simulator. The first pass needed no concurrency fixes.
 
 ## Build
 
@@ -38,17 +38,19 @@ App/                              SwiftUI app target
   AppModel.swift                  @Observable app state, progress, rewards, unlocks, JSON persistence
   Screens/                        WorldMap, Island, Studio (Beat Box), Reward, ParentGate + ParentArea,
                                   ProfilePicker ("Who's playing?"), LatencyRig (parent area, behind the gate)
-  Games/                          CrabTapView, ChordChefView (phase-1 vertical slice)
+  Games/                          CrabTapView, WaveRiderView, ChordChefView
   Support/TapCaptureView.swift    UIKit touch capture with hardware timestamps for rhythm judging
   Support/Narrator.swift          Bop's voice (AVSpeechSynthesizer stand-in), `.narrates(_:)`, ReplayButton
   Support/Avatars.swift           placeholder SF Symbol avatars for child profiles
+  Support/TapZone.swift           shared "Tap here on the beat!" pad for rhythm games
   Resources/Content/skills.json   curriculum skill nodes for islands 1-4 (schemaVersion 1)
 Packages/SoundIslandKit/          local Swift package, one library per module from spec section 8
   MusicTheory                     Pitch, PitchClass, Interval, Scale, Key, Triad, Roman numerals
   AudioCore                       AVAudioEngine + AVAudioSourceNode renderer, SPSC command queue, synth voices,
                                   16-step sequencer, metronome, audio clock, latency-compensated tap timing
   GameKitCore                     TimingJudge, BeatSchedule, Stars, RoundFlow (hints), ChordChefRules,
-                                  LatencyCalibration (rig math), NarrationPolicy (when Bop speaks)
+                                  LatencyCalibration (rig math), NarrationPolicy (when Bop speaks),
+                                  RhythmPattern / PatternResult / WaveRiderAttempts (Wave Rider)
   Curriculum                      AgeBand, SkillNode/TierSpec JSON, AdaptiveDifficulty, Mastery, SpacedRepetition, IslandUnlock
   StudioModel                     Song, Section, Track, BeatGrid (bitmask), DrumKit, NoteEvent (96 PPQN), StudioTool
   ProfileStore                    SwiftData ChildProfile + SkillProgressRecord, ProfileSnapshot (working copy and
@@ -103,6 +105,13 @@ Done in this first pass (unverified build):
       Not yet modeled as entities: GameSession, RoundResult, ParentSettings; Song is a JSON blob on ChildProfile.
 - [x] Task 6: every instruction voiced (map, picker, Crab Tap, Chord Chef orders, Studio hint, Reward) with a replay
       button at the age band's touch-target size. Recorded VO still to do.
+- [x] Task 7 (part): Wave Rider, matching design/screens/WaveRider.dc.html. 5 patterns per session; a pattern that
+      isn't clean is retried (glow after 2 misses, 15% slower after 3) and counts as correct only if cleaned before
+      the slow replay. Teaches rhythm.quarter_notes, then rhythm.eighth_notes once mastered (`AppModel.skill(for:)`
+      now picks the first unmastered node of a game). Verified in the simulator: scrolling, retries, round advance.
+      Not verified: hit timing feel on a device, notation glyphs (tier 3), eighth-note tiers on screen.
+- [x] Fixed: restarting the transport could let a game read the previous round's last beat and end the new round
+      at once (Crab Tap and Wave Rider). `AudioEngine.latestBeat()` now returns nil until the transport is running.
 
 Known issues / open questions:
 - Task 3 (mHostTime semantics) and the 20 ms tap-to-sound gate need a real iPad; the simulator can't answer them.
@@ -127,7 +136,7 @@ Known issues / open questions:
    Support up to 4 child profiles + a profile picker screen.
 5. BLOCKED (third-party SDK rule, needs art; see Known issues). Bop as a Rive state machine (idle, listen, sing, cheer, wobble, sleep) replacing `BopView`; crabs and islands as real art.
 6. DONE (recorded VO pending). Spoken instructions: every on-screen instruction voiced (record VO later; use AVSpeechSynthesizer as a stand-in), replay icon next to it.
-7. NEXT. Wave Rider (design/screens/WaveRider.dc.html) and Drum Circle to finish Beat Beach.
+7. NEXT: Drum Circle (Wave Rider done) to finish Beat Beach.
 8. Remaining MVP games in curriculum order: Bird Song, Pitch Climb, Key Hunt, Echo Monkeys, Vine Swing, Melody Paint, Mood Boats, Stack Attack.
 9. Studio tools: Keys, Melody Maker, Chord Pads (track rail unlocks), Mixer + FX stickers (pulled forward for 8-10), section copy/arrangement, Concert mode.
 10. Accessibility pass: VoiceOver on every control, Switch Control, Reduce Motion, Calm theme, left-handed Studio.
