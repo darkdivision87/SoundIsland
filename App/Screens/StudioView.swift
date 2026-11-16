@@ -170,10 +170,14 @@ struct StudioView: View {
                     }
                     .buttonStyle(.plain)
                     .accessibilityLabel("Hear \(row.displayName)")
+                    // Explorers (6-7): 8 eighth-note cells, 64 pt tall. Makers (8-10): 16 sixteenth-note cells.
+                    let perBeat = coarse ? 2 : 4
                     HStack(spacing: 14) {
-                        ForEach(0..<4, id: \.self) { group in
+                        ForEach(0..<4, id: \.self) { beat in
                             HStack(spacing: 4) {
-                                ForEach(0..<4, id: \.self) { k in cell(row: row, step: group * 4 + k, on: on, off: off) }
+                                ForEach(0..<perBeat, id: \.self) { k in
+                                    cell(row: row, step: (beat * perBeat + k) * stride, on: on, off: off)
+                                }
                             }
                         }
                     }
@@ -186,9 +190,15 @@ struct StudioView: View {
         .background(RoundedRectangle(cornerRadius: 36).fill(SI.Palette.ink900).offset(y: 7))
     }
 
+    /// 8-step grid for Explorers, 16-step for Makers (spec section 6). In 8-step mode each cell owns an eighth note.
+    private var coarse: Bool { model.profile.ageBand.studioSteps == 8 }
+    private var stride: Int { coarse ? 2 : 1 }
+
     private func cell(row: DrumRow, step: Int, on: Color, off: Color) -> some View {
         let isOn = model.beatGrid.isOn(row, step: step)
-        let isHead = playing && playhead == step
+        let isHead = playing && playhead.map { $0 / stride == step / stride } == true
+        let width: CGFloat = coarse ? 96 : 50
+        let height: CGFloat = coarse ? 64 : 50
         return Button {
             var g = model.beatGrid
             g.toggle(row, step: step)
@@ -201,10 +211,10 @@ struct StudioView: View {
                 .background(RoundedRectangle(cornerRadius: 14).fill(isOn ? SI.Palette.ink900 : .clear).offset(y: 4))
                 .overlay(RoundedRectangle(cornerRadius: 17).strokeBorder(SI.Palette.bop, lineWidth: isHead ? 4 : 0).padding(-6))
                 .scaleEffect(isHead && isOn ? 1.08 : 1)
-                .frame(width: 50, height: 50)
+                .frame(width: width, height: height)
         }
         .buttonStyle(.plain)
-        .accessibilityLabel("\(row.displayName) step \(step + 1)")
+        .accessibilityLabel("\(row.displayName) step \(step / stride + 1)")
         .accessibilityValue(isOn ? "on" : "off")
     }
 

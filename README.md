@@ -1,6 +1,6 @@
 # Sound Island
 
-An iPad app where kids ages 5 to 11 learn real music theory through short games, then use what they learn
+An iPad app where kids ages 6 to 10 learn real music theory through short games, then use what they learn
 in a kid-sized music studio. Every game unlocks a Studio tool: learn rhythm, get the drum machine; learn chords,
 get the chord pads.
 

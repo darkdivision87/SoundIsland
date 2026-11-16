@@ -44,7 +44,7 @@ public enum SI {
         public static let lip: CGFloat = 6
         public static let bigButtonHeight: CGFloat = 88
         public static let iconButton: CGFloat = 76
-        public static let stepCell: CGFloat = 52
+        public static let stepCell: CGFloat = 52          // Makers 16-step grid; Explorers use 64 pt tall 8-step cells
     }
 
     /// SF Pro Rounded at the spec's sizes. Nothing below 16 pt.

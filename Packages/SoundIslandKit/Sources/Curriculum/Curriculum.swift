@@ -5,37 +5,30 @@ import Foundation
 
 // MARK: - Age bands
 
+/// Target audience is ages 6 to 10 (App Store Kids band: 6-8).
 public enum AgeBand: String, CaseIterable, Sendable, Codable {
-    case sprouts, explorers, makers
+    case explorers, makers
 
     public var ages: ClosedRange<Int> {
         switch self {
-        case .sprouts: 5...6
-        case .explorers: 7...8
-        case .makers: 9...11
+        case .explorers: 6...7
+        case .makers: 8...10
         }
     }
 
     /// Minimum touch target in points (spec section 6).
-    public var minTouchTarget: Double { self == .sprouts ? 88 : 64 }
+    public var minTouchTarget: Double { self == .explorers ? 64 : 52 }
 
-    /// Max interactive elements on screen (spec section 6).
-    public var maxInteractiveElements: Int { self == .sprouts ? 5 : 9 }
+    /// Max interactive elements on screen (spec section 6). A Studio grid counts as one.
+    public var maxInteractiveElements: Int { self == .explorers ? 7 : 9 }
 
     /// Max answer choices per round (spec section 2).
-    public var maxChoices: Int {
-        switch self {
-        case .sprouts: 3
-        case .explorers: 4
-        case .makers: 7
-        }
-    }
+    public var maxChoices: Int { self == .explorers ? 4 : 7 }
 
-    public static func forAge(_ age: Int) -> AgeBand {
-        if age <= 6 { return .sprouts }
-        if age <= 8 { return .explorers }
-        return .makers
-    }
+    /// Explorers get the 8-step Studio grid, Makers the 16-step grid.
+    public var studioSteps: Int { self == .explorers ? 8 : 16 }
+
+    public static func forAge(_ age: Int) -> AgeBand { age <= 7 ? .explorers : .makers }
 }
 
 // MARK: - Content

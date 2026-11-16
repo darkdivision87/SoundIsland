@@ -3,17 +3,17 @@
   "skills": [
     {
       "skillNode": "rhythm.steady_pulse", "island": "beat_beach", "concept": "Steady pulse and tempo",
-      "ageBands": ["sprouts", "explorers", "makers"], "prereqs": [], "game": "crab_tap",
+      "ageBands": ["explorers", "makers"], "prereqs": [], "game": "crab_tap",
       "tiers": [
-        {"tier": 1, "bpm": 70, "beats": 16},
-        {"tier": 2, "bpm": 90, "beats": 16},
-        {"tier": 3, "bpm": 80, "changeToBpm": 100, "beats": 16, "stopAtEnd": true}
+        {"tier": 1, "bpm": 96, "beats": 16},
+        {"tier": 2, "bpm": 108, "beats": 16},
+        {"tier": 3, "bpm": 100, "changeToBpm": 120, "beats": 16}
       ],
       "mastery": {"correctOf": [4, 5], "sessions": 2}, "studioContribution": "beat_box.unlock"
     },
     {
       "skillNode": "rhythm.quarter_notes", "island": "beat_beach", "concept": "Quarter notes and rests",
-      "ageBands": ["sprouts", "explorers", "makers"], "prereqs": ["rhythm.steady_pulse"], "game": "wave_rider",
+      "ageBands": ["explorers", "makers"], "prereqs": ["rhythm.steady_pulse"], "game": "wave_rider",
       "tiers": [
         {"tier": 1, "bpm": 72, "bars": 1, "values": ["q"], "notation": false},
         {"tier": 2, "bpm": 80, "bars": 1, "values": ["q", "qr"], "notation": false},
@@ -33,7 +33,7 @@
     },
     {
       "skillNode": "rhythm.copy_patterns", "island": "beat_beach", "concept": "Copy and create rhythm patterns",
-      "ageBands": ["sprouts", "explorers", "makers"], "prereqs": ["rhythm.quarter_notes"], "game": "drum_circle",
+      "ageBands": ["explorers", "makers"], "prereqs": ["rhythm.quarter_notes"], "game": "drum_circle",
       "tiers": [
         {"tier": 1, "beats": 2, "drums": 1},
         {"tier": 2, "beats": 4, "drums": 2},
@@ -43,7 +43,7 @@
     },
     {
       "skillNode": "pitch.high_low", "island": "pitch_peaks", "concept": "High and low",
-      "ageBands": ["sprouts", "explorers", "makers"], "prereqs": [], "game": "bird_song",
+      "ageBands": ["explorers", "makers"], "prereqs": [], "game": "bird_song",
       "tiers": [
         {"tier": 1, "intervalSemitones": 12},
         {"tier": 2, "intervalSemitones": 7},
@@ -73,7 +73,7 @@
     },
     {
       "skillNode": "melody.call_response", "island": "melody_jungle", "concept": "Call and response",
-      "ageBands": ["sprouts", "explorers", "makers"], "prereqs": ["pitch.high_low"], "game": "echo_monkeys",
+      "ageBands": ["explorers", "makers"], "prereqs": ["pitch.high_low"], "game": "echo_monkeys",
       "tiers": [
         {"tier": 1, "length": 3, "scale": "majorPentatonic"},
         {"tier": 2, "length": 4, "scale": "major"},
@@ -93,7 +93,7 @@
     },
     {
       "skillNode": "melody.compose", "island": "melody_jungle", "concept": "Composing a melody",
-      "ageBands": ["sprouts", "explorers", "makers"], "prereqs": ["melody.call_response"], "game": "melody_paint",
+      "ageBands": ["explorers", "makers"], "prereqs": ["melody.call_response"], "game": "melody_paint",
       "tiers": [
         {"tier": 1, "maxNotes": 5},
         {"tier": 2, "maxNotes": 8, "endOnHome": true},
@@ -113,7 +113,7 @@
     },
     {
       "skillNode": "harmony.major_minor", "island": "harmony_harbor", "concept": "Major vs. minor mood",
-      "ageBands": ["sprouts", "explorers", "makers"], "prereqs": ["pitch.high_low"], "game": "mood_boats",
+      "ageBands": ["explorers", "makers"], "prereqs": ["pitch.high_low"], "game": "mood_boats",
       "tiers": [
         {"tier": 1, "material": "triads"},
         {"tier": 2, "material": "progressions"},

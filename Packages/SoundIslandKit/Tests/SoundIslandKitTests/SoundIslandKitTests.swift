@@ -60,8 +60,8 @@ final class MusicTheoryTests: XCTestCase {
 final class TimingJudgeTests: XCTestCase {
     func testWindowsByBand() {
         let beats = [0.0, 0.5, 1.0, 1.5]
-        let sprouts = TimingJudge(band: .sprouts)
-        XCTAssertEqual(sprouts.judge(tap: 0.61, targets: beats).grade, .great)   // 110 ms late
+        let explorers = TimingJudge(band: .explorers)
+        XCTAssertEqual(explorers.judge(tap: 0.61, targets: beats).grade, .great)   // 110 ms late
         let makers = TimingJudge(band: .makers)
         XCTAssertEqual(makers.judge(tap: 0.61, targets: beats).grade, .good)
         XCTAssertEqual(makers.judge(tap: 0.25, targets: beats).grade, .miss)
@@ -180,7 +180,7 @@ final class CurriculumTests: XCTestCase {
     func testDecodesSpecJSONAndValidatesGraph() throws {
         let json = """
         {"schemaVersion": 1, "skills": [
-          {"skillNode": "rhythm.quarter_notes", "island": "beat_beach", "concept": "Quarter notes", "ageBands": ["sprouts"],
+          {"skillNode": "rhythm.quarter_notes", "island": "beat_beach", "concept": "Quarter notes", "ageBands": ["explorers"],
            "prereqs": [], "game": "wave_rider", "tiers": [{"tier": 1, "bpm": 72, "bars": 1, "values": ["q"], "notation": false}],
            "mastery": {"correctOf": [4, 5], "sessions": 2}, "studioContribution": null},
           {"skillNode": "rhythm.eighth_notes", "island": "beat_beach", "concept": "Eighth notes", "ageBands": ["explorers", "makers"],
@@ -206,10 +206,12 @@ final class CurriculumTests: XCTestCase {
     }
 
     func testAgeBands() {
-        XCTAssertEqual(AgeBand.forAge(5), .sprouts)
-        XCTAssertEqual(AgeBand.forAge(8), .explorers)
+        XCTAssertEqual(AgeBand.forAge(6), .explorers)
+        XCTAssertEqual(AgeBand.forAge(7), .explorers)
+        XCTAssertEqual(AgeBand.forAge(8), .makers)
         XCTAssertEqual(AgeBand.forAge(10), .makers)
-        XCTAssertEqual(AgeBand.sprouts.minTouchTarget, 88)
+        XCTAssertEqual(AgeBand.explorers.minTouchTarget, 64)
+        XCTAssertEqual(AgeBand.makers.studioSteps, 16)
     }
 }
 

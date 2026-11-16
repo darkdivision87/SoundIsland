@@ -253,7 +253,7 @@ struct ChordChefView: View {
         let size: CGFloat = pads.count > 7 ? 78 : 120
         return HStack(spacing: pads.count > 7 ? 10 : 16) {
             ForEach(pads, id: \.self) { pc in
-                NotePad(pc, showName: model.profile.ageBand != .sprouts, size: size, highlighted: hintNote == pc)
+                NotePad(pc, showName: true, size: size, highlighted: hintNote == pc)
                     .offset(dragging == pc ? dragOffset : .zero)
                     .zIndex(dragging == pc ? 1 : 0)
                     .onTapGesture { add(pc) }

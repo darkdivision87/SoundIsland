@@ -30,7 +30,7 @@ struct CrabTapView: View {
     private let ticker = Timer.publish(every: 1.0 / 120.0, on: .main, in: .common).autoconnect()
 
     private var tierSpec: TierSpec { model.skill(for: .crabTap)?.tier(model.tier(for: .crabTap)) ?? TierSpec(tier: 1, params: [:]) }
-    private var bpm: Double { tierSpec.double("bpm", default: 70) }
+    private var bpm: Double { tierSpec.double("bpm", default: 96) }
     private var changeToBPM: Double? { tierSpec.params["changeToBpm"] == nil ? nil : tierSpec.double("changeToBpm", default: bpm) }
     private var judge: TimingJudge { TimingJudge(band: model.profile.ageBand) }
 

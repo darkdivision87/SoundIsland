@@ -20,7 +20,7 @@ public struct TapJudgment: Sendable, Equatable {
 }
 
 /// Scores taps against target times on the AUDIO clock (seconds since transport start).
-/// Windows per spec: Sprouts +/-150 ms "great", Explorers +/-100 ms, Makers +/-60 ms.
+/// Windows per spec: Explorers (6-7) +/-120 ms "great", Makers (8-10) +/-80 ms.
 /// "Good" is double the great window; anything further is a miss.
 public struct TimingJudge: Sendable {
     public let greatWindow: Double
@@ -30,9 +30,8 @@ public struct TimingJudge: Sendable {
 
     public init(band: AgeBand) {
         switch band {
-        case .sprouts: greatWindow = 0.150
-        case .explorers: greatWindow = 0.100
-        case .makers: greatWindow = 0.060
+        case .explorers: greatWindow = 0.120
+        case .makers: greatWindow = 0.080
         }
     }
 
@@ -66,7 +65,7 @@ public struct TimingJudge: Sendable {
         public let targetCount: Int
         public let hitTargets: Set<Int>
 
-        /// Share of targets hit on time (great or good). Extra taps do not lower it for Sprouts-friendliness.
+        /// Share of targets hit on time (great or good). Extra taps do not lower it (errorless learning).
         public var accuracy: Double {
             targetCount == 0 ? 0 : Double(hitTargets.count) / Double(targetCount)
         }

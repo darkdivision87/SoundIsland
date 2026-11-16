@@ -1,4 +1,4 @@
-# CLAUDE.md - Sound Island (kids music theory iPad app)
+# CLAUDE.md - Sound Island (kids music theory iPad app, ages 6 to 10)
 
 You are continuing a handoff. Read this file, then `docs/SPEC.md`, then look at `design/screens/*.dc.html`
 (open them in a browser; they are the hi-fi target). The live spec and design canvas are:
@@ -65,11 +65,18 @@ docs/SPEC.md                      dev spec export
 3. **Kids' privacy (COPPA / Apple Kids Category).** No third-party SDKs, no analytics that leave the device, no ads,
    no external links or purchases outside the parental gate, no free-text entry for kids, no mic without the parent area.
 4. **Design fidelity.** Colors, sizes and layout come from `DesignSystem` tokens and `design/screens/`. Every pitch class
-   keeps its fixed color AND shape (`NoteStyle.of`). Touch targets >= 88 pt for Sprouts, >= 64 pt otherwise.
+   keeps its fixed color AND shape (`NoteStyle.of`). Touch targets >= 64 pt for Explorers (6-7), >= 52 pt for Makers (8-10).
    Never use red for "wrong"; use `SI.Palette.tryAgain`. Text contrast >= 4.5:1 (white on brand purple only at 22 pt+ bold).
 5. **Errorless learning.** No lives, no fail screens. Wrong answers play their sound and the round continues.
 6. **Pure logic lives in the package and gets a unit test.** Views stay thin.
 7. No em-dashes in user-facing copy (owner preference).
+
+## Audience (changed after the first pass)
+
+Target is ages 6 to 10, App Store Kids band 6-8. Two age bands in `Curriculum.AgeBand`: Explorers (6-7) and
+Makers (8-10). The old 5-and-under "Sprouts" band was removed. Explorers get every instruction spoken, 4 choices max,
+an 8-step Studio grid (64 pt cells) and +/-120 ms timing windows; Makers get the 16-step grid and +/-80 ms.
+Crab Tap starts at 96 BPM (young kids tap most naturally around 120-150 BPM; slow tempos are harder for them).
 
 ## Status (phase 1 = spec section 14, weeks 1-6)
 
@@ -94,7 +101,7 @@ Done in this first pass (unverified build):
 6. Spoken instructions: every on-screen instruction voiced (record VO later; use AVSpeechSynthesizer as a stand-in), replay icon next to it.
 7. Wave Rider (design/screens/WaveRider.dc.html) and Drum Circle to finish Beat Beach.
 8. Remaining MVP games in curriculum order: Bird Song, Pitch Climb, Key Hunt, Echo Monkeys, Vine Swing, Melody Paint, Mood Boats, Stack Attack.
-9. Studio tools: Keys, Melody Maker, Chord Pads (track rail unlocks), section copy/arrangement, Concert mode.
+9. Studio tools: Keys, Melody Maker, Chord Pads (track rail unlocks), Mixer + FX stickers (pulled forward for 8-10), section copy/arrangement, Concert mode.
 10. Accessibility pass: VoiceOver on every control, Switch Control, Reduce Motion, Calm theme, left-handed Studio.
 11. Snapshot tests for DesignSystem components; playtest build to TestFlight.
 

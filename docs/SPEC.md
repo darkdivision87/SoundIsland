@@ -1,10 +1,10 @@
 # Kids Music Theory iPad App - Dev Spec
 
-Source of truth: the live Claude Doc "Kids Music Theory iPad App - Dev Spec" (https://claude.ai/artifact/BC2NkpqRH4fMhDPMbWxmDe). This file is a markdown export as of 2026-11-15. Hi-fi screens: https://claude.ai/artifact/9B5bRwsrXnRaCeRtCDezYU (HTML copies in `design/screens/`).
+Source of truth: the live Claude Doc "Kids Music Theory iPad App - Dev Spec" (https://claude.ai/artifact/BC2NkpqRH4fMhDPMbWxmDe). This file is a markdown export as of 2026-11-15, retargeted to ages 6 to 10. Hi-fi screens: https://claude.ai/artifact/9B5bRwsrXnRaCeRtCDezYU (HTML copies in `design/screens/`).
 
 ## 1. Product overview
 
-**Working name: Sound Island.** An iPad-first app where kids ages 5 to 11 learn real music theory by playing short games, then immediately use what they learned to make their own songs in a kid-sized studio. Every game unlocks a tool in the studio, so theory is never abstract: learn rhythm, get the drum machine; learn chords, get the chord pads.
+**Working name: Sound Island.** An iPad-first app where kids ages 6 to 10 learn real music theory by playing short games, then immediately use what they learned to make their own songs in a kid-sized studio. Every game unlocks a tool in the studio, so theory is never abstract: learn rhythm, get the drum machine; learn chords, get the chord pads.
 
 **Core loop (3 to 8 minutes):** Play a game on an island, earn a new sound or instrument, use it in the Studio, share the song with family.
 
@@ -38,15 +38,16 @@ Free download with World 1 and a limited Studio. One-time unlock or family subsc
 
 | Band | Ages | Reading | Interaction profile | Theory ceiling |
 | --- | --- | --- | --- | --- |
-| Sprouts | 5 to 6 | Pre-reader | Big drag and tap, voice prompts for everything, 3 choices max | Pulse, high/low, loud/soft, simple rhythms, C major pentatonic |
-| Explorers | 7 to 8 | Early reader | Short labels, 4 choices, simple sequences | Note names, quarter/eighth notes, major scale, intervals by ear, I-IV-V |
-| Makers | 9 to 11 | Reader | Full labels, staff notation toggle, multi-step tasks | Minor keys, triads and inversions, 16-bar form, mixing and effects |
+| Explorers | 6 to 7 | Early reader | Every instruction spoken, short labels, 4 choices max, 8-step Studio grid | Pulse, quarter/eighth notes, note names, major and pentatonic scales, high/low and steps/skips, major vs. minor by ear, I-IV-V |
+| Makers | 8 to 10 | Reader | Full labels, staff notation toggle, multi-step tasks, 16-step Studio grid | Minor keys, triads and inversions, I-IV-V-vi, 16-bar form, mixing, effects, basic sound design |
+
+App Store Kids Category: Apple allows one age band per app; list under **6 to 8**. 9 to 10 year olds are served by the Makers content.
 
 ### Learning principles (every game must pass these)
 
 1. **Sound first, symbol second.** Notation fades in only after 3 successful rounds.
 2. **Color and shape coding is consistent app-wide** (see section 6).
-3. **Errorless learning for Sprouts.** Wrong answers play their own sound, Bop shows the difference, the round continues. No lives, no fail screens.
+3. **Errorless learning.** Wrong answers play their own sound, Bop shows the difference, the round continues. No lives, no fail screens.
 4. **Spaced repetition.** Skill nodes resurface at 1, 3 and 7 sessions after first mastery.
 5. **Mastery gating, not time gating.** A world unlocks at 70% mastery of its prior world's nodes.
 6. **Make something every session.** Each game ends with "Add to my song".
@@ -72,7 +73,7 @@ Islands 1 to 4 ship in the MVP. Skill nodes are authored as JSON (see `App/Resou
 ### Shared game framework
 
 - **Round structure:** Listen > Try > Feedback (within 100 ms) > Reward (1 to 3 stars) > "Add to my song".
-- **Timing judgment:** scored against the audio clock. Windows: Sprouts +/-150 ms, Explorers +/-100 ms, Makers +/-60 ms.
+- **Timing judgment:** scored against the audio clock. Windows: Explorers (6 to 7) +/-120 ms "great", Makers (8 to 10) +/-80 ms; "good" is double that.
 - **Pitch judgment:** tap/drag in V1; mic singing (on-device YIN) in phase 2.
 - **Hints:** after 2 misses the target glows; after 3, Bop replays it slower.
 - **Difficulty tiers:** Tier 1 to 3 per game, chosen by the adaptive engine (section 10).
@@ -82,7 +83,7 @@ Islands 1 to 4 ship in the MVP. Skill nodes are authored as JSON (see `App/Resou
 
 | Game | Concept | Mechanic | Tier ladder (1 > 3) | Mastery rule |
 | --- | --- | --- | --- | --- |
-| Crab Tap | Steady pulse, tempo | Crabs march to a beat; tap on each beat to make them dance | 70 BPM steady > 90 BPM > tempo changes, then stops | 80% on-beat over 16 beats |
+| Crab Tap | Steady pulse, tempo | Crabs march to a beat; tap on each beat to make them dance | 96 BPM steady > 108 BPM > 100 to 120 BPM tempo change (kids this age tap naturally at about 120 to 150 BPM, so slow tempos are the hard ones) | 80% on-beat over 16 beats |
 | Wave Rider | Quarter, eighth notes, rests | Note "shells" scroll to a hit ring; tap as they arrive | 1 bar quarters > + rests > 2 bars with eighths | 4 of 5 patterns clean |
 | Drum Circle | Rhythm patterns | Copy Bop's pattern on 3 giant drum pads, then make your own | 2 beats 1 drum > 4 beats 2 drums > 1 bar 3 drums | 3 copies correct |
 | Bird Song | High vs. low | Drag the worm to the higher (or lower) bird | Octave > 5th > 2nd | 8 of 10 |
@@ -127,7 +128,8 @@ Visual direction: **"toy-box tactile"**. Chunky rounded shapes, thick lips under
 
 - Landscape primary. Design at 1194 x 834 pt; scale to 1376 x 1032 (13") and 1133 x 744 (mini).
 - 8 pt grid, 32 pt outer margins.
-- Touch targets: 88 pt min for Sprouts, 64 pt for Explorers/Makers; 16 pt min gap.
+- Touch targets: 64 pt min for Explorers (6 to 7), 52 pt for Makers (8 to 10); 16 pt min gap.
+- Max interactive elements on screen: 7 for Explorers, 9 for Makers (a Studio grid counts as one).
 - Top-left = Back/Home. Top-right = parental gate (hold 2 s).
 
 ### Color tokens
@@ -171,7 +173,7 @@ SF Pro Rounded. Display 48/52 Heavy, Title 34/40 Bold, Headline 26/32 Bold, Body
 | Island Card | Illustrated island, label pill with 3 stars |
 | Note Pad | 96 to 120 pt rounded square in note color, shape glyph |
 | Chord Block | 140 x 96 pt, root color, sun/moon face |
-| Step Cell | 52 pt on 11" (56 on 13"), radius 14, off = tint, on = full color |
+| Step Cell | 64 pt tall cells in an 8-step grid for Explorers, 52 pt squares in a 16-step grid for Makers; radius 14 |
 | Star Burst | 1 to 3 stars, 120 ms stagger |
 | Bop | Rive state machine: idle, listen, sing, cheer, wobble, sleep |
 
@@ -240,9 +242,9 @@ Cold launch under 2.5 s (iPad 9th gen), game load under 1 s, tap to sound under 
 ## 14. Roadmap
 
 1. **Prototype (weeks 1 to 6):** AudioCore + MusicTheory, latency rig, Crab Tap + Chord Chef vertical slice, first playtest. Gate: tap-to-sound under 20 ms, 5 of 8 kids start a game unaided.
-2. **Alpha (weeks 7 to 18):** Game framework, all 12 MVP games, World Map, Studio 4 tools, SwiftData, design system.
+2. **Alpha (weeks 7 to 18):** Game framework, all 12 MVP games, World Map, Studio 4 tools plus Mixer and FX stickers (pulled forward for the 8 to 10 group), SwiftData, design system.
 3. **Beta (weeks 19 to 26):** Parent area, StoreKit 2, adaptive difficulty, accessibility, TestFlight.
-4. **Launch (week 28).**
+4. **Launch (week 28):** App Store Kids Category, ages 6 to 8 band.
 5. **Phase 2 (months 8 to 12):** Islands 5 to 7, Arranger, Mixer/FX, mic mode, MIDI export, teacher mode.
 
 Open questions: final name/trademark, pricing model, staff notation in MVP, Android later.

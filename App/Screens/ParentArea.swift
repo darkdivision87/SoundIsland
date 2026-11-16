@@ -72,9 +72,8 @@ struct ParentAreaView: View {
                 Section("Child profile") {
                     TextField("Nickname (optional)", text: $model.profile.nickname)
                     Picker("Age band", selection: $model.profile.ageBand) {
-                        Text("Sprouts (5-6)").tag(AgeBand.sprouts)
-                        Text("Explorers (7-8)").tag(AgeBand.explorers)
-                        Text("Makers (9-11)").tag(AgeBand.makers)
+                        Text("Explorers (6-7)").tag(AgeBand.explorers)
+                        Text("Makers (8-10)").tag(AgeBand.makers)
                     }
                 }
                 Section("Progress") {
