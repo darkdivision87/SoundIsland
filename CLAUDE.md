@@ -5,10 +5,11 @@ You are continuing a handoff. Read this file, then `docs/SPEC.md`, then look at 
 - Spec doc: https://claude.ai/artifact/BC2NkpqRH4fMhDPMbWxmDe
 - Hi-fi UI canvas: https://claude.ai/artifact/9B5bRwsrXnRaCeRtCDezYU
 
-## Build state (2026-11-15)
+## Build state (2026-11-15, overnight run)
 
-The code now compiles cleanly (no warnings) with Xcode 27.2 / Swift 6.4 in Swift 6 mode, `swift test` passes
-(44 tests), and the app runs in the iPad Pro 11-inch (M5) simulator. The first pass needed no concurrency fixes.
+Compiles cleanly (no warnings) with Xcode 27.2 / Swift 6.4 in Swift 6 mode, `swift test` passes (76 tests,
+including DesignSystem snapshot and contrast tests), and the app runs in the iPad Pro 11-inch (M5) simulator.
+All 12 MVP games and the Studio tools are playable; tasks 7 to 11 below are done except the TestFlight upload.
 
 ## Build
 
@@ -36,9 +37,12 @@ project.yml                       XcodeGen spec (iPad only, iPadOS 17+, landscap
 App/                              SwiftUI app target
   SoundIslandApp.swift            entry, RootView navigation, DesignCanvas (scales 1194x834 design to any iPad)
   AppModel.swift                  @Observable app state, progress, rewards, unlocks, JSON persistence
-  Screens/                        WorldMap, Island, Studio (Beat Box), Reward, ParentGate + ParentArea,
-                                  ProfilePicker ("Who's playing?"), LatencyRig (parent area, behind the gate)
-  Games/                          CrabTapView, WaveRiderView, ChordChefView
+  Screens/                        WorldMap, Island, Studio + StudioPanels (Keys, Melody Maker, Chord Pads, Mixer,
+                                  Concert), Reward, ParentGate + ParentArea, ProfilePicker ("Who's playing?"),
+                                  LatencyRig (parent area, behind the gate)
+  Games/                          GameShell (shared frame, AnswerCard, Sequencer) + one view per game:
+                                  CrabTap, WaveRider, DrumCircle, BirdSong, PitchClimb, KeyHunt, EchoMonkeys,
+                                  VineSwing, MelodyPaint, ChordChef, MoodBoats, StackAttack
   Support/TapCaptureView.swift    UIKit touch capture with hardware timestamps for rhythm judging
   Support/Narrator.swift          Bop's voice (AVSpeechSynthesizer stand-in), `.narrates(_:)`, ReplayButton
   Support/Avatars.swift           placeholder SF Symbol avatars for child profiles
@@ -47,17 +51,26 @@ App/                              SwiftUI app target
 Packages/SoundIslandKit/          local Swift package, one library per module from spec section 8
   MusicTheory                     Pitch, PitchClass, Interval, Scale, Key, Triad, Roman numerals
   AudioCore                       AVAudioEngine + AVAudioSourceNode renderer, SPSC command queue, synth voices,
-                                  16-step sequencer, metronome, audio clock, latency-compensated tap timing
+                                  16-step drum sequencer (bar-gated for call and response), song-loop slot table
+                                  (2048 preallocated NoteSlots), per-track gain, 4 master FX stickers, metronome,
+                                  audio clock, latency-compensated tap timing
   GameKitCore                     TimingJudge, BeatSchedule, Stars, RoundFlow (hints), ChordChefRules,
                                   LatencyCalibration (rig math), NarrationPolicy (when Bop speaks),
-                                  RhythmPattern / PatternResult / WaveRiderAttempts (Wave Rider)
+                                  RhythmPattern / PatternResult / PatternAttempts (Wave Rider), DrumPattern /
+                                  CopyResult (Drum Circle), PitchGames, MelodyGames, HarmonyGames (round logic)
   Curriculum                      AgeBand, SkillNode/TierSpec JSON, AdaptiveDifficulty, Mastery, SpacedRepetition, IslandUnlock
-  StudioModel                     Song, Section, Track, BeatGrid (bitmask), DrumKit, NoteEvent (96 PPQN), StudioTool
+  StudioModel                     Song, Section, Track, BeatGrid (bitmask), DrumKit, NoteEvent (96 PPQN), StudioTool,
+                                  Playback (section/concert loops, arrangement edits, ChordVoicing, RecordQuantizer,
+                                  MelodyGrid, ChordLane)
   ProfileStore                    SwiftData ChildProfile + SkillProgressRecord, ProfileSnapshot (working copy and
-                                  phase 1 JSON migration source), 4-child cap, one-time profile.json import
+                                  phase 1 JSON migration source), 4-child cap, one-time profile.json import,
+                                  ChildPreferences (calm colors, left-handed Studio; per device, UserDefaults)
   DesignSystem                    color tokens, SF Pro Rounded type scale, note color+shape map, BigButtonStyle,
-                                  NotePad, StarRow, SpeechBubble, FeedbackChip, BopView (placeholder for Rive)
-  Tests/SoundIslandKitTests       unit tests for everything above except AudioCore and DesignSystem
+                                  NotePad + NoteBadge (sharps striped), NoteColorChip, StarRow, SpeechBubble,
+                                  FeedbackChip, BopView (placeholder for Rive)
+  Tests/SoundIslandKitTests       unit tests for everything above except AudioCore; DesignSystem has snapshot tests
+                                  (ImageRenderer vs __Snapshots__/*.png; RECORD_SNAPSHOTS=1 to re-record) and
+                                  contrast tests
 design/screens/                   hi-fi HTML screens from the design canvas (the visual target)
 docs/SPEC.md                      dev spec export
 ```
@@ -112,6 +125,23 @@ Done in this first pass (unverified build):
       Not verified: hit timing feel on a device, notation glyphs (tier 3), eighth-note tiers on screen.
 - [x] Fixed: restarting the transport could let a game read the previous round's last beat and end the new round
       at once (Crab Tap and Wave Rider). `AudioEngine.latestBeat()` now returns nil until the transport is running.
+- [x] Task 7: Drum Circle. Bop plays on odd bars through the sequencer (`.setPatternBars` gates the drum pattern
+      per bar), the child copies on even bars, judged per pad on the audio clock (1.5x the band's window); a copy
+      that isn't clean loops into another listen bar. Ends with the child making a bar that Bop plays back.
+      Verified in the simulator through the reward screen.
+- [x] Task 8: Bird Song, Pitch Climb, Key Hunt, Echo Monkeys, Vine Swing, Melody Paint, Mood Boats, Stack Attack.
+      Round logic in GameKitCore with tests; every game opened and played in the simulator (wrong and right paths
+      checked on Bird Song and Stack Attack). Melody Paint and Stack Attack tier 3 save into the current section.
+- [x] Task 9: Studio. Track rail unlocks from progress (Bass stays locked for Bass Caves). Keys (scale-locked,
+      quantized recording on the audio clock), Melody Maker (8 in-key rows x 16 eighths; Explorers page by bar),
+      Chord Pads (8 diatonic pads, voice-led, Together/Strum/Sparkle), section Copy, arrangement editing (tap a
+      part to cycle its section, add, remove), Mixer for Makers (volume, mute, Echo/Underwater/Robot/Wobble FX),
+      Concert mode (plays the arrangement once). All checked in the simulator except the Mixer sheet (Makers only).
+- [x] Task 10: VoiceOver/Switch Control activation counts as a tap (tap zones, drum pads, Studio keys), Reduce
+      Motion drops animations app-wide, parent toggles for Calm colors and Left-handed Studio. The toggles were not
+      driven in the simulator (behind the parent gate); VoiceOver itself is untested.
+- [x] Task 11 (part): DesignSystem snapshot + contrast tests. They caught ink text on the A/B note colors at about
+      4.2:1; labels on note colors are now 19 pt+ heavy (large text) and small chord names use NoteColorChip.
 
 Known issues / open questions:
 - Task 3 (mHostTime semantics) and the 20 ms tap-to-sound gate need a real iPad; the simulator can't answer them.
@@ -122,7 +152,13 @@ Known issues / open questions:
 - Parent-area buttons inherit the app's ink foreground, so they don't look tappable and destructive actions aren't
   tinted. Cosmetic, parent-only.
 - Simulator driving tip: zero-length injected taps don't trigger SwiftUI Buttons or TapCaptureView reliably; use
-  ~0.15 s taps. Screenshots can lag one frame behind.
+  ~0.15 s taps. Screenshots can lag one frame behind. The first tap right after the "Who's playing?" cover closes
+  is often dropped in the simulator; check on a device whether kids see the same.
+- Studio note tracks loop on the render thread but synth voices just decay (no note-offs); fine for marimba and
+  piano, revisit when sampled instruments with sustain land.
+- Bop's reward headline is "Amazing!" for every game except Crab Tap and Chord Chef, even at 1 star (the subline
+  carries the star message). Consider per-game headlines.
+- Stack Attack and Chord Pads use C major only; Song.key moods other than Sunny C are not selectable yet.
 
 ## Next tasks, in order
 
@@ -136,11 +172,14 @@ Known issues / open questions:
    Support up to 4 child profiles + a profile picker screen.
 5. BLOCKED (third-party SDK rule, needs art; see Known issues). Bop as a Rive state machine (idle, listen, sing, cheer, wobble, sleep) replacing `BopView`; crabs and islands as real art.
 6. DONE (recorded VO pending). Spoken instructions: every on-screen instruction voiced (record VO later; use AVSpeechSynthesizer as a stand-in), replay icon next to it.
-7. NEXT: Drum Circle (Wave Rider done) to finish Beat Beach.
-8. Remaining MVP games in curriculum order: Bird Song, Pitch Climb, Key Hunt, Echo Monkeys, Vine Swing, Melody Paint, Mood Boats, Stack Attack.
-9. Studio tools: Keys, Melody Maker, Chord Pads (track rail unlocks), Mixer + FX stickers (pulled forward for 8-10), section copy/arrangement, Concert mode.
-10. Accessibility pass: VoiceOver on every control, Switch Control, Reduce Motion, Calm theme, left-handed Studio.
-11. Snapshot tests for DesignSystem components; playtest build to TestFlight.
+7. DONE. Drum Circle (Beat Beach complete).
+8. DONE. Remaining MVP games: Bird Song, Pitch Climb, Key Hunt, Echo Monkeys, Vine Swing, Melody Paint, Mood Boats, Stack Attack.
+9. DONE. Studio tools: Keys, Melody Maker, Chord Pads (track rail unlocks), Mixer + FX stickers (Makers), section copy/arrangement, Concert mode.
+10. DONE (VoiceOver device check pending). Accessibility pass: VoiceOver/Switch Control activation, Reduce Motion, Calm colors, left-handed Studio.
+11. Snapshot tests DONE. NEXT: playtest build to TestFlight (needs DEVELOPMENT_TEAM in project.yml and an App Store
+    Connect record; do it from Xcode: Product > Archive).
+12. NEXT after that: real-device pass (tasks 2-3 latency, timing feel in Crab Tap / Wave Rider / Drum Circle / Keys
+    recording), recorded VO, Bop art (task 5 decision), key moods in the Studio.
 
 ## Conventions
 
