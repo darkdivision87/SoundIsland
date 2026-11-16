@@ -46,6 +46,7 @@ struct RootView: View {
         case .island(let island): IslandView(island: island)
         case .game(.crabTap): CrabTapView()
         case .game(.waveRider): WaveRiderView()
+        case .game(.drumCircle): DrumCircleView()
         case .game(.chordChef): ChordChefView()
         case .game(let other): ComingSoonView(title: other.displayName)
         case .studio: StudioView()

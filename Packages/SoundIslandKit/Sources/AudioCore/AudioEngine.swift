@@ -21,6 +21,9 @@ public enum AudioCommand: BitwiseCopyable, Sendable {
     case setMasterGain(Float)
     /// Start the transport. `metronome` adds a click on every quarter note (Crab Tap, Wave Rider).
     case play(metronome: Bool, playPattern: Bool)
+    /// Play the drum pattern only on bars where `bar % period == phase` (call and response games).
+    /// `.play` resets this to every bar, so send it after `.play`.
+    case setPatternBars(period: UInt8, phase: UInt8)
     case stop
     case allNotesOff
 }
@@ -201,6 +204,8 @@ final class Renderer: @unchecked Sendable {
     private var isTransportRunning = false
     private var metronome = false
     private var playPattern = true
+    private var patternPeriod = 1
+    private var patternPhase = 0
     private var tempo: Double = 96
     private var nextStepSample: Double = 0
     private var stepIndex = 0
@@ -257,7 +262,7 @@ final class Renderer: @unchecked Sendable {
 
     private func fireStep() {
         let step = stepIndex % 16
-        if playPattern {
+        if playPattern, (stepIndex / 16) % patternPeriod == patternPhase {
             if pattern.kick & (1 << UInt16(step)) != 0 { trigger(.kick, velocity: 0.95) }
             if pattern.snare & (1 << UInt16(step)) != 0 { trigger(.snare, velocity: 0.8) }
             if pattern.hat & (1 << UInt16(step)) != 0 { trigger(.hat, velocity: step % 4 == 0 ? 0.55 : 0.4) }
@@ -300,12 +305,17 @@ final class Renderer: @unchecked Sendable {
         case let .play(metro, pat):
             metronome = metro
             playPattern = pat
+            patternPeriod = 1
+            patternPhase = 0
             isTransportRunning = true
             stepIndex = 0
             nextStepSample = Double(sampleTime)
             transportStartSample.store(sampleTime, ordering: .relaxed)
             lastBeat.write(-1, sampleTime)
             playing.store(true, ordering: .releasing) // publishes the lastBeat reset above
+        case let .setPatternBars(period, phase):
+            patternPeriod = max(1, Int(period))
+            patternPhase = Int(phase) % patternPeriod
         case .stop:
             isTransportRunning = false
             stepCount.store(-1, ordering: .relaxed)

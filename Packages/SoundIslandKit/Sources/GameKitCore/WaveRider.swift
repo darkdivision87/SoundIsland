@@ -110,9 +110,12 @@ public struct PatternResult: Sendable, Equatable {
     }
 }
 
-/// Attempts at one Wave Rider pattern. A pattern that isn't clean is tried again (errorless: no fail state);
-/// the third try is slower. It counts as correct only if cleaned before the slow replay.
-public struct WaveRiderAttempts: Sendable, Equatable {
+/// Attempts at one pattern (Wave Rider, Drum Circle). A pattern that isn't clean is tried again
+/// (errorless: no fail state); the third try gets the strongest hint (slower in Wave Rider).
+/// It counts as correct only if cleaned before that third try.
+public typealias WaveRiderAttempts = PatternAttempts
+
+public struct PatternAttempts: Sendable, Equatable {
     public static let maxAttempts = 3
     public static let slowTempoFactor = 0.85
 

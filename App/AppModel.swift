@@ -40,7 +40,7 @@ enum GameID: String, Hashable, CaseIterable {
     }
 
     /// Playable so far: Crab Tap, Wave Rider, Chord Chef.
-    var isPlayable: Bool { self == .crabTap || self == .waveRider || self == .chordChef }
+    var isPlayable: Bool { self == .crabTap || self == .waveRider || self == .drumCircle || self == .chordChef }
 
     var island: IslandID {
         switch self {
