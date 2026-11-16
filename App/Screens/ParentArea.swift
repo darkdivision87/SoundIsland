@@ -92,6 +92,10 @@ struct ParentAreaView: View {
                     Toggle("Unlock all islands", isOn: $model.profile.unlockAll)
                     LabeledContent("Microphone", value: "Off (coming in phase 2)")
                 }
+                Section("Audio") {
+                    Button("Check audio latency") { model.path.append(.latencyRig) }
+                    LabeledContent("Timing offset", value: String(format: "%+.1f ms", model.audio.calibrationOffset * 1000))
+                }
                 Section("Privacy") {
                     Text("Sound Island collects no personal data. Songs and progress stay on this iPad.")
                         .foregroundStyle(.secondary)

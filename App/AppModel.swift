@@ -89,6 +89,7 @@ enum Route: Hashable {
     case studio
     case reward(RewardInfo)
     case parentArea
+    case latencyRig
 }
 
 /// Everything persisted for one child profile. Phase 1 stores JSON in Application Support;
@@ -125,9 +126,21 @@ final class AppModel {
         load()
         profile.sessionIndex += 1
         save()
+        audio.calibrationOffset = UserDefaults.standard.double(forKey: Self.calibrationKey)
         do { try audio.start() } catch { print("Audio failed to start: \(error)") }
         audio.setQuietMode(profile.quietMode)
         pushSongToAudio()
+    }
+
+    // MARK: Audio calibration
+
+    /// Per device, not per child: the latency belongs to this iPad and its speaker, so it lives in
+    /// UserDefaults rather than the child profile. Never leaves the device.
+    private static let calibrationKey = "audioCalibrationOffset"
+
+    func setCalibrationOffset(_ seconds: Double) {
+        audio.calibrationOffset = seconds
+        UserDefaults.standard.set(seconds, forKey: Self.calibrationKey)
     }
 
     // MARK: Content and progress

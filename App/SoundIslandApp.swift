@@ -43,6 +43,7 @@ struct RootView: View {
         case .studio: StudioView()
         case .reward(let info): RewardView(info: info)
         case .parentArea: ParentAreaView()
+        case .latencyRig: LatencyRigView()
         }
     }
 }

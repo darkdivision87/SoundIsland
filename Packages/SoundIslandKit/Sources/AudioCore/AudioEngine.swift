@@ -148,11 +148,7 @@ public final class AudioEngine: @unchecked Sendable {
     public func transportSeconds(forHostSeconds hostSeconds: Double) -> Double {
         let (renderSample, renderHostTicks) = renderer.renderClock.read()
         let renderHostSeconds = AudioEngine.seconds(fromHostTicks: UInt64(renderHostTicks))
-        var latency = calibrationOffset
-        #if os(iOS)
-        let s = AVAudioSession.sharedInstance()
-        latency += s.outputLatency + s.ioBufferDuration
-        #endif
+        let latency = calibrationOffset + reportedOutputLatency
         let sampleAtTouch = Double(renderSample) + (hostSeconds - renderHostSeconds) * sampleRate - latency * sampleRate
         let start = Double(renderer.transportStartSample.load(ordering: .relaxed))
         return (sampleAtTouch - start) / sampleRate
@@ -164,7 +160,25 @@ public final class AudioEngine: @unchecked Sendable {
         return info
     }()
 
-    static func seconds(fromHostTicks ticks: UInt64) -> Double {
+    /// Output latency the session reports (hardware + one IO buffer), in seconds. 0 off iOS.
+    public var reportedOutputLatency: Double {
+        #if os(iOS)
+        let s = AVAudioSession.sharedInstance()
+        return s.outputLatency + s.ioBufferDuration
+        #else
+        return 0
+        #endif
+    }
+
+    /// The audio buffer that rendered the most recent `.drum` command: a serial that increments per
+    /// drum command, and that buffer's host time in seconds. The latency rig compares it with the
+    /// touch timestamp to measure touch-to-render time (spec section 13).
+    public func lastDrumRender() -> (serial: Int, hostSeconds: Double) {
+        let (serial, ticks) = renderer.lastTrigger.read()
+        return (serial, AudioEngine.seconds(fromHostTicks: UInt64(ticks)))
+    }
+
+    public static func seconds(fromHostTicks ticks: UInt64) -> Double {
         Double(ticks) * Double(timebase.numer) / Double(timebase.denom) / 1_000_000_000
     }
 }
@@ -196,6 +210,9 @@ final class Renderer: @unchecked Sendable {
     let transportStartSample = ManagedAtomic<Int>(0)
     let lastBeat = SeqLockPair()      // (beat index, sample time)
     let renderClock = SeqLockPair()   // (sample time at buffer start, host ticks at buffer start)
+    let lastTrigger = SeqLockPair()   // (drum command serial, host ticks of the buffer that rendered it)
+    private var bufferHostTicks = 0
+    private var triggerSerial = 0
 
     init(sampleRate: Float) {
         self.sampleRate = sampleRate
@@ -203,6 +220,7 @@ final class Renderer: @unchecked Sendable {
         voices.initialize(repeating: Voice(), count: Self.maxVoices)
         limiter.configure(sampleRate: sampleRate)
         lastBeat.write(-1, 0)
+        lastTrigger.write(0, 0)
     }
 
     deinit { voices.deallocate() }
@@ -212,7 +230,8 @@ final class Renderer: @unchecked Sendable {
     // MARK: Render
 
     func render(frames: Int, hostTime: UInt64, abl: UnsafeMutableAudioBufferListPointer, commands: SPSCQueue<AudioCommand>) {
-        renderClock.write(sampleTime, Int(truncatingIfNeeded: hostTime))
+        bufferHostTicks = Int(truncatingIfNeeded: hostTime)
+        renderClock.write(sampleTime, bufferHostTicks)
         while let cmd = commands.pop() { apply(cmd) }
 
         guard abl.count > 0, let left = abl[0].mData?.assumingMemoryBound(to: Float.self) else { return }
@@ -259,6 +278,8 @@ final class Renderer: @unchecked Sendable {
             for v in 0..<Self.maxVoices where voices[v].kind == .tone && voices[v].midi == midi { voices[v].releasing = true }
         case let .drum(sound, velocity):
             trigger(sound, velocity: velocity)
+            triggerSerial &+= 1
+            lastTrigger.write(triggerSerial, bufferHostTicks)
         case let .setDrumPattern(masks):
             pattern = masks
         case let .setTempo(bpm):
