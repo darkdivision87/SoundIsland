@@ -45,6 +45,7 @@ struct RootView: View {
         switch route {
         case .island(let island): IslandView(island: island)
         case .game(.crabTap): CrabTapView()
+        case .game(.waveRider): WaveRiderView()
         case .game(.chordChef): ChordChefView()
         case .game(let other): ComingSoonView(title: other.displayName)
         case .studio: StudioView()

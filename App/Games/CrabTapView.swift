@@ -42,7 +42,7 @@ struct CrabTapView: View {
                     topBar
                     Spacer()
                     crabs.padding(.bottom, 40)
-                    tapZone
+                    TapZone { host in onTap(hostSeconds: host) }
                 }
             }
         }
@@ -182,23 +182,6 @@ struct CrabTapView: View {
             }
         }
         .accessibilityHidden(true)
-    }
-
-    private var tapZone: some View {
-        ZStack {
-            RoundedRectangle(cornerRadius: 48)
-                .fill(SI.Palette.bopTint)
-                .overlay(RoundedRectangle(cornerRadius: 48).strokeBorder(SI.Palette.bop, style: StrokeStyle(lineWidth: 5, dash: [14, 10])))
-            VStack(spacing: 8) {
-                Image(systemName: "hand.tap.fill").font(.system(size: 56)).foregroundStyle(SI.Palette.bop)
-                Text("Tap here on the beat!").font(.system(size: 40, weight: .heavy, design: .rounded))
-            }
-            .allowsHitTesting(false)
-            TapCaptureView { host, _ in onTap(hostSeconds: host) }
-        }
-        .frame(height: 228)
-        .padding(.horizontal, 32)
-        .padding(.bottom, 32)
     }
 }
 

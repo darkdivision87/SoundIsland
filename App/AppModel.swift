@@ -39,8 +39,8 @@ enum GameID: String, Hashable, CaseIterable {
         }
     }
 
-    /// Phase 1 vertical slice: Crab Tap + Chord Chef (spec section 14).
-    var isPlayable: Bool { self == .crabTap || self == .chordChef }
+    /// Playable so far: Crab Tap, Wave Rider, Chord Chef.
+    var isPlayable: Bool { self == .crabTap || self == .waveRider || self == .chordChef }
 
     var island: IslandID {
         switch self {
@@ -155,7 +155,12 @@ final class AppModel {
         do { content = try CurriculumContent.decode(data) } catch { assertionFailure("Bad curriculum: \(error)") }
     }
 
-    func skill(for game: GameID) -> SkillNode? { content?.skills(forGame: game.rawValue).first }
+    /// A game can teach several skill nodes in order (Wave Rider: quarter notes, then eighth notes).
+    /// The current one is the first the child hasn't mastered; once all are mastered, keep the last.
+    func skill(for game: GameID) -> SkillNode? {
+        let nodes = content?.skills(forGame: game.rawValue) ?? []
+        return nodes.first { profile.progress[$0.skillNode]?.isMastered != true } ?? nodes.last
+    }
 
     func tier(for game: GameID) -> Int {
         guard let s = skill(for: game) else { return 1 }

@@ -132,11 +132,14 @@ public final class AudioEngine: @unchecked Sendable {
     /// Total 16th-note steps played since the transport started, or -1 when stopped.
     public var stepCount: Int { renderer.stepCount.load(ordering: .relaxed) }
     public var currentStep: Int? { let s = stepCount; return s < 0 ? nil : s % 16 }
-    public var isPlaying: Bool { renderer.playing.load(ordering: .relaxed) }
+    public var isPlaying: Bool { renderer.playing.load(ordering: .acquiring) }
 
     /// Beat (quarter-note) times since transport start, in seconds on the audio timeline.
     /// Games poll this each frame and append new beats; robust to tempo changes mid-round.
+    /// Returns nil while stopped, and until the render thread has actually started a newly requested
+    /// transport, so a game restarting a round never sees the previous round's last beat.
     public func latestBeat() -> (index: Int, seconds: Double)? {
+        guard isPlaying else { return nil }
         let (index, sample) = renderer.lastBeat.read()
         guard index >= 0 else { return nil }
         let start = renderer.transportStartSample.load(ordering: .relaxed)
@@ -302,11 +305,11 @@ final class Renderer: @unchecked Sendable {
             nextStepSample = Double(sampleTime)
             transportStartSample.store(sampleTime, ordering: .relaxed)
             lastBeat.write(-1, sampleTime)
-            playing.store(true, ordering: .relaxed)
+            playing.store(true, ordering: .releasing) // publishes the lastBeat reset above
         case .stop:
             isTransportRunning = false
             stepCount.store(-1, ordering: .relaxed)
-            playing.store(false, ordering: .relaxed)
+            playing.store(false, ordering: .releasing)
         case .allNotesOff:
             for v in 0..<Self.maxVoices { voices[v].releasing = true }
         }
