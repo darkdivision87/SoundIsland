@@ -12,7 +12,9 @@ struct ProfilePickerView: View {
                 HStack(alignment: .bottom, spacing: 12) {
                     BopView(mood: .cheer, size: 110)
                     SpeechBubble("Who's playing?").padding(.bottom, 60)
+                    ReplayButton(line: "Who's playing?").padding(.bottom, 60)
                 }
+                .narrates("Who's playing?")
                 HStack(spacing: 40) {
                     ForEach(model.profiles) { child in
                         Button { model.switchProfile(to: child.id) } label: { tile(child) }

@@ -85,6 +85,7 @@ final class AppModel {
     var profile = ProfileSnapshot()
     private(set) var content: CurriculumContent?
     let audio = AudioEngine.shared
+    let narrator = Narrator()
 
     /// Up to 4 children (spec section 9). `profile` is the active child's working copy; `save()` writes it back.
     private let store: ProfileStore
@@ -128,6 +129,7 @@ final class AppModel {
         audio.calibrationOffset = UserDefaults.standard.double(forKey: Self.calibrationKey)
         do { try audio.start() } catch { print("Audio failed to start: \(error)") }
         audio.setQuietMode(profile.quietMode)
+        narrator.quiet = profile.quietMode
         pushSongToAudio()
     }
 
@@ -243,6 +245,7 @@ final class AppModel {
     func setQuietMode(_ on: Bool) {
         profile.quietMode = on
         audio.setQuietMode(on)
+        narrator.quiet = on
         save()
     }
 
@@ -261,6 +264,7 @@ final class AppModel {
         UserDefaults.standard.set(id.uuidString, forKey: Self.activeProfileKey)
         audio.send(.stop)
         audio.setQuietMode(profile.quietMode)
+        narrator.quiet = profile.quietMode
         pushSongToAudio()
         save()
         showProfilePicker = false

@@ -158,6 +158,8 @@ struct StudioView: View {
                 Text("Beat Box").font(SI.Font.headline)
                 Spacer()
                 Text("Tap a box to add a sound").font(SI.Font.label).foregroundStyle(SI.Palette.ink500)
+                ReplayButton(line: "Tap a box to add a sound")
+                    .narrates("Tap a box to add a sound")
             }
             ForEach(rows, id: \.row) { style in
                 let row = style.row, on = style.on, off = style.off, icon = style.icon

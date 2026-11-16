@@ -72,6 +72,7 @@ struct RewardView: View {
                     .position(x: 165, y: 834 - 155)
             }
         }
+        .narrates(spokenLine)
         .onAppear {
             // Star burst: 120 ms stagger (spec section 6), each star plays a rising note.
             for i in 0..<3 {
@@ -81,6 +82,12 @@ struct RewardView: View {
                 }
             }
         }
+    }
+
+    private var spokenLine: String {
+        var line = "\(headline) \(subline)"
+        if let tool = info.unlockedTool { line += " New! \(tool.displayName) is in your Studio." }
+        return line
     }
 
     private var headline: String {

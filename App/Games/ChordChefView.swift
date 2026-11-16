@@ -150,11 +150,20 @@ struct ChordChefView: View {
         .padding(.top, 24)
     }
 
+    /// What Bop says for the current order, e.g. "Order up! Cook me G major, a sunny chord."
+    private var orderLine: String {
+        guard let t = order?.target else { return "Order up!" }
+        return "Order up! Cook me \(t.kidName), \(t.quality.mood == .sunny ? "a sunny chord" : "a moonlight chord")."
+    }
+
     private var orderCard: some View {
         VStack(spacing: 8) {
             BopView(mood: feedback == true ? .cheer : (feedback == false ? .wobble : .sing), size: 130)
             VStack(spacing: 14) {
-                Text("Order up! Cook me...").font(SI.Font.body)
+                HStack(spacing: 10) {
+                    Text("Order up! Cook me...").font(SI.Font.body)
+                    ReplayButton(line: orderLine)
+                }
                 if let t = order?.target {
                     HStack(spacing: 14) {
                         ChordBlock(triad: t)
@@ -174,6 +183,7 @@ struct ChordChefView: View {
             .overlay(RoundedRectangle(cornerRadius: 32).strokeBorder(SI.Palette.ink900, lineWidth: 4))
             .background(RoundedRectangle(cornerRadius: 32).fill(SI.Palette.ink900).offset(y: 7))
         }
+        .narrates(orderLine)
     }
 
     private var potArea: some View {

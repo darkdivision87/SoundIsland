@@ -86,27 +86,34 @@ struct WorldMapView: View {
     @ViewBuilder private var bop: some View {
         let current = spots.last { model.isUnlocked($0.island) } ?? spots[0]
         let line = current.island == .harmonyHarbor ? "Let's cook some chords!" : "Tap an island to play!"
+        let replaySize = CGFloat(model.profile.ageBand.minTouchTarget)
         if current.y < 300 {
             // Top-row island: Bop sits up and to the right, as in Main.dc.html (Harmony Harbor -> 676, 48).
             HStack(alignment: .bottom, spacing: 6) {
                 BopView(mood: .idle, size: 96)
                 // Capped so the bubble wraps instead of running under the star counter.
-                SpeechBubble(line).multilineTextAlignment(.center)
-                    .fixedSize(horizontal: false, vertical: true)
-                    .frame(width: 200)
-                    .padding(.bottom, 52)
+                VStack(alignment: .trailing, spacing: 8) {
+                    SpeechBubble(line).multilineTextAlignment(.center)
+                        .fixedSize(horizontal: false, vertical: true)
+                        .frame(width: 200)
+                    ReplayButton(line: line)
+                }
+                .alignmentGuide(.bottom) { d in d[.bottom] - replaySize - 8 + 52 } // bubble stays 52 pt above Bop's feet
             }
             .offset(x: current.x + 56, y: current.y - 112)
-            .allowsHitTesting(false)
+            .narrates(line)
         } else {
             // Bottom-row island: stack bubble over Bop in the open column above it so it never covers a neighbor.
             VStack(spacing: 10) {
                 SpeechBubble(line).multilineTextAlignment(.center).frame(maxWidth: 190)
-                BopView(mood: .idle, size: 96)
+                HStack(spacing: 10) {
+                    BopView(mood: .idle, size: 96)
+                    ReplayButton(line: line)
+                }
             }
             .frame(width: 190, height: current.y - 4, alignment: .bottom)
             .offset(x: current.x)
-            .allowsHitTesting(false)
+            .narrates(line)
         }
     }
 

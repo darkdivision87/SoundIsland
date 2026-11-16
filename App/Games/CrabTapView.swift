@@ -139,8 +139,10 @@ struct CrabTapView: View {
             Spacer()
             HStack(alignment: .center, spacing: 8) {
                 SpeechBubble(instruction).frame(maxWidth: 300)
+                ReplayButton(line: instruction)
                 BopView(mood: bopMood, size: 84)
             }
+            .narrates(instruction)
         }
         .padding(.horizontal, 32)
         .padding(.top, 24)
