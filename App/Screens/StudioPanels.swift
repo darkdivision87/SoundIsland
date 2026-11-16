@@ -78,6 +78,7 @@ struct KeysPanel: View {
                         .accessibilityElement()
                         .accessibilityLabel("Key \(pc.name)")
                         .accessibilityAddTraits(.isButton)
+                        .accessibilityAction { press(i, hostSeconds: CACurrentMediaTime()) }
                     }
                 }
                 // Hardware touch timestamps so recorded notes land where the finger did (audio clock).

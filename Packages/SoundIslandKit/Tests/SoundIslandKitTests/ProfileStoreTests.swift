@@ -99,3 +99,18 @@ final class ProfileStoreTests: XCTestCase {
         XCTAssertEqual(try store.ensureProfile().id, first.id)
     }
 }
+
+final class ChildPreferencesTests: XCTestCase {
+    func testPerChildRoundTripAndDefaults() throws {
+        let suite = "prefs.\(UUID().uuidString)"
+        let defaults = try XCTUnwrap(UserDefaults(suiteName: suite))
+        defer { defaults.removePersistentDomain(forName: suite) }
+        let a = UUID(), b = UUID()
+        XCTAssertEqual(ChildPreferences.load(for: a, from: defaults), ChildPreferences())
+        ChildPreferences(calmColors: true, leftHanded: true).save(for: a, to: defaults)
+        XCTAssertEqual(ChildPreferences.load(for: a, from: defaults), ChildPreferences(calmColors: true, leftHanded: true))
+        XCTAssertEqual(ChildPreferences.load(for: b, from: defaults), ChildPreferences(), "other children unaffected")
+        ChildPreferences.remove(for: a, from: defaults)
+        XCTAssertEqual(ChildPreferences.load(for: a, from: defaults), ChildPreferences())
+    }
+}

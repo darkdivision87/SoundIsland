@@ -109,6 +109,10 @@ struct ParentAreaView: View {
                 Section("Controls") {
                     Toggle("Quiet mode (-10 dB)", isOn: Binding(get: { model.profile.quietMode }, set: { model.setQuietMode($0) }))
                     Toggle("Unlock all islands", isOn: $model.profile.unlockAll)
+                    Toggle("Calm colors", isOn: Binding(get: { model.preferences.calmColors },
+                                                        set: { v in model.setPreferences { $0.calmColors = v } }))
+                    Toggle("Left-handed Studio (tracks on the right)", isOn: Binding(get: { model.preferences.leftHanded },
+                                                                                     set: { v in model.setPreferences { $0.leftHanded = v } }))
                     LabeledContent("Microphone", value: "Off (coming in phase 2)")
                 }
                 Section("Audio") {

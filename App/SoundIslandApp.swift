@@ -18,6 +18,7 @@ struct SoundIslandApp: App {
 
 struct RootView: View {
     @Environment(AppModel.self) private var model
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
     var body: some View {
         @Bindable var model = model
@@ -31,6 +32,10 @@ struct RootView: View {
         }
         .font(SI.Font.body)
         .foregroundStyle(SI.Palette.ink900)
+        // Calm theme (parent setting): softer colors everywhere. Note shapes still tell notes apart.
+        .saturation(model.preferences.calmColors ? 0.55 : 1)
+        // Reduce Motion: drop springs and bounces app-wide. Game scrolling driven by the audio clock stays.
+        .transaction { if reduceMotion { $0.animation = nil } }
         .fullScreenCover(isPresented: $model.showProfilePicker) {
             ProfilePickerView()
                 .font(SI.Font.body)

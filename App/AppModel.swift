@@ -94,6 +94,8 @@ final class AppModel {
     var activeProfileID: UUID { activeRecord.id }
     /// Kid-facing "Who's playing?" screen. Shown at launch when more than one child shares the iPad.
     var showProfilePicker = false
+    /// Parent-set comfort settings for the active child (calm colors, left-handed Studio).
+    private(set) var preferences = ChildPreferences()
 
     private static let activeProfileKey = "activeProfileID"
 
@@ -122,6 +124,7 @@ final class AppModel {
         profile = store.snapshot(of: record)
 
         loadContent()
+        preferences = ChildPreferences.load(for: record.id)
         refreshProfiles()
         showProfilePicker = profiles.count > 1
         profile.sessionIndex += 1
@@ -341,6 +344,11 @@ final class AppModel {
 
     // MARK: Parent settings
 
+    func setPreferences(_ change: (inout ChildPreferences) -> Void) {
+        change(&preferences)
+        preferences.save(for: activeRecord.id)
+    }
+
     func setQuietMode(_ on: Bool) {
         profile.quietMode = on
         audio.setQuietMode(on)
@@ -358,6 +366,7 @@ final class AppModel {
         guard let record = try? store.profile(id: id) else { return }
         activeRecord = record
         profile = store.snapshot(of: record)
+        preferences = ChildPreferences.load(for: id)
         profile.sessionIndex += 1
         selectedSection = 0
         UserDefaults.standard.set(id.uuidString, forKey: Self.activeProfileKey)
@@ -381,6 +390,7 @@ final class AppModel {
         guard profiles.count > 1, let record = try? store.profile(id: id) else { return }
         if id == activeRecord.id, let other = profiles.first(where: { $0.id != id }) { switchProfile(to: other.id) }
         try? store.delete(record)
+        ChildPreferences.remove(for: id)
         refreshProfiles()
     }
 

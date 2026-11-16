@@ -278,12 +278,13 @@ struct DrumCircleView: View {
                 .position(padCenter(i))
                 .accessibilityElement()
                 .accessibilityLabel("\(pad.name) drum")
-                .accessibilityAddTraits(.isButton)
+                .accessibilityAddTraits([.isButton, .allowsDirectInteraction])
+                .accessibilityAction { onTap(hostSeconds: CACurrentMediaTime(), location: padCenter(i)) }
             }
             TapCaptureView { host, location in onTap(hostSeconds: host, location: location) }
                 .frame(width: 1194, height: 380)
                 .offset(y: Self.padY - 190)
-                .accessibilityLabel("Drum pads")
+                .accessibilityHidden(true)
         }
         .frame(width: 1194, height: 834, alignment: .topLeading)
     }

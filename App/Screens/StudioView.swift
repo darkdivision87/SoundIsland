@@ -34,11 +34,12 @@ struct StudioView: View {
             VStack(alignment: .leading, spacing: 12) {
                 topBar
                 HStack(alignment: .top, spacing: 24) {
-                    trackRail
+                    if !model.preferences.leftHanded { trackRail }
                     VStack(alignment: .leading, spacing: 16) {
                         toolPanel
                         songStrip
                     }
+                    if model.preferences.leftHanded { trackRail }
                 }
                 Spacer(minLength: 0)
             }
