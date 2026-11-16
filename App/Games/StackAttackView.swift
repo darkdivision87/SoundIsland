@@ -166,7 +166,7 @@ struct StackAttackView: View {
             NoteShape(style.glyph).fill(.white).overlay(NoteShape(style.glyph).stroke(SI.Palette.ink900, lineWidth: 2.5))
                 .frame(width: size * 0.26, height: size * 0.26)
             Text(Self.key.romanNumeral(degree: degree)).font(.system(size: size * 0.24, weight: .heavy, design: .rounded))
-            Text(c.kidName).font(.system(size: size * 0.11, weight: .bold, design: .rounded)).lineLimit(1).minimumScaleFactor(0.7)
+            NoteColorChip(c.kidName, size: size * 0.11)
         }
         .foregroundStyle(SI.Palette.ink900)
         .padding(.horizontal, 8)

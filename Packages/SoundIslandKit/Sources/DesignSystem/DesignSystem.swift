@@ -229,8 +229,9 @@ public struct NotePad: View {
                 .overlay(NoteShape(style.glyph).stroke(SI.Palette.ink900, lineWidth: 2.5))
                 .frame(width: size * 0.46, height: size * 0.46)
             if showName {
+                // At least 19 pt heavy: ink on the A/B note colors is ~4.2:1, which needs large text (3:1 rule).
                 Text(pitchClass.name)
-                    .font(.system(size: size * 0.22, weight: .heavy, design: .rounded))
+                    .font(.system(size: max(19, size * 0.22), weight: .heavy, design: .rounded))
                     .foregroundStyle(SI.Palette.ink900)
             }
         }
@@ -297,6 +298,21 @@ public struct Stripes: Shape {
             x += spacing
         }
         return p
+    }
+}
+
+/// Small text placed on a note color: a white chip keeps it at full contrast whatever the note color.
+public struct NoteColorChip: View {
+    let text: String
+    let size: CGFloat
+    public init(_ text: String, size: CGFloat) { self.text = text; self.size = size }
+    public var body: some View {
+        Text(text)
+            .font(.system(size: size, weight: .bold, design: .rounded))
+            .foregroundStyle(SI.Palette.ink900)
+            .lineLimit(1).minimumScaleFactor(0.6)
+            .padding(.horizontal, 6).padding(.vertical, 1)
+            .background(Capsule().fill(.white.opacity(0.92)))
     }
 }
 

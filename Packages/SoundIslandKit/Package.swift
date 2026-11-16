@@ -36,7 +36,8 @@ let package = Package(
         .target(name: "DesignSystem", dependencies: ["MusicTheory"]),
         .testTarget(
             name: "SoundIslandKitTests",
-            dependencies: ["MusicTheory", "GameKitCore", "Curriculum", "StudioModel", "ProfileStore"]
+            dependencies: ["MusicTheory", "GameKitCore", "Curriculum", "StudioModel", "ProfileStore", "DesignSystem"],
+            resources: [.copy("__Snapshots__")]
         ),
     ]
 )

@@ -293,7 +293,7 @@ struct ChordPadsPanel: View {
         return VStack(spacing: 4) {
             NoteBadge(triad.root, size: size * 0.24, outline: SI.Palette.ink900)
             Text(key.romanNumeral(degree: (d - 1) % 7 + 1)).font(.system(size: size * 0.24, weight: .heavy, design: .rounded))
-            Text(d == 8 ? "\(triad.root.name) high" : triad.kidName).font(.system(size: size * 0.12, weight: .bold, design: .rounded)).lineLimit(1).minimumScaleFactor(0.6)
+            NoteColorChip(d == 8 ? "\(triad.root.name) high" : triad.kidName, size: size * 0.12)
         }
         .foregroundStyle(SI.Palette.ink900)
         .padding(.horizontal, 6)

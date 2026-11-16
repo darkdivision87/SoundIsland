@@ -136,7 +136,7 @@ struct PitchClimbView: View {
                         NoteShape(style.glyph).fill(.white).overlay(NoteShape(style.glyph).stroke(SI.Palette.ink900, lineWidth: 2))
                             .frame(width: 26, height: 26)
                             .accessibilityHidden(true)
-                        Text(pc.name).font(SI.Font.label).foregroundStyle(SI.Palette.ink900)
+                        Text(pc.name).font(.system(size: 22, weight: .heavy, design: .rounded)).foregroundStyle(SI.Palette.ink900)
                     }
                     .frame(width: 240, height: max(52, model.minTarget - 8))
                     .background(Capsule().fill(style.color))
