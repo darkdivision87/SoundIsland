@@ -235,6 +235,13 @@ public struct NotePad: View {
             }
         }
         .frame(width: size, height: size * 1.1)
+        .background {
+            // Sharps and flats: diagonal stripes over the lower natural's color.
+            if style.striped {
+                Stripes(spacing: size / 7).stroke(.white.opacity(0.55), lineWidth: size / 22)
+                    .clipShape(RoundedRectangle(cornerRadius: size * 0.25, style: .continuous))
+            }
+        }
         .background(RoundedRectangle(cornerRadius: size * 0.25, style: .continuous).fill(style.color))
         .overlay(RoundedRectangle(cornerRadius: size * 0.25, style: .continuous).strokeBorder(SI.Palette.ink900, lineWidth: SI.Metrics.outline))
         .background(RoundedRectangle(cornerRadius: size * 0.25, style: .continuous).fill(style.lip).offset(y: 7))
@@ -245,6 +252,51 @@ public struct NotePad: View {
         )
         .accessibilityElement(children: .ignore)
         .accessibilityLabel("Note \(pitchClass.name), \(style.colorName) \(style.glyph.rawValue)")
+    }
+}
+
+/// A note's glyph in its color. Sharps and flats get white diagonal stripes over the lower natural's
+/// color, so C and C# never look the same (NoteStyle.striped).
+public struct NoteBadge: View {
+    let pitchClass: PitchClass
+    let size: CGFloat
+    let outline: Color
+
+    public init(_ pitchClass: PitchClass, size: CGFloat = 40, outline: Color = SI.Palette.ink900) {
+        self.pitchClass = pitchClass
+        self.size = size
+        self.outline = outline
+    }
+
+    public var body: some View {
+        let style = NoteStyle.of(pitchClass)
+        ZStack {
+            NoteShape(style.glyph).fill(style.color)
+            if style.striped {
+                Stripes(spacing: max(4, size / 6))
+                    .stroke(.white, lineWidth: max(2, size / 12))
+                    .clipShape(NoteShape(style.glyph))
+            }
+            NoteShape(style.glyph).stroke(outline, lineWidth: max(2, size / 16))
+        }
+        .frame(width: size, height: size)
+        .accessibilityHidden(true)
+    }
+}
+
+/// Diagonal lines filling a rect, used for the sharp/flat stripes.
+public struct Stripes: Shape {
+    let spacing: CGFloat
+    public init(spacing: CGFloat) { self.spacing = spacing }
+    public func path(in rect: CGRect) -> Path {
+        var p = Path()
+        var x = rect.minX - rect.height
+        while x < rect.maxX {
+            p.move(to: CGPoint(x: x, y: rect.maxY))
+            p.addLine(to: CGPoint(x: x + rect.height, y: rect.minY))
+            x += spacing
+        }
+        return p
     }
 }
 

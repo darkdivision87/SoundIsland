@@ -39,8 +39,8 @@ enum GameID: String, Hashable, CaseIterable {
         }
     }
 
-    /// Playable so far: Crab Tap, Wave Rider, Chord Chef.
-    var isPlayable: Bool { self == .crabTap || self == .waveRider || self == .drumCircle || self == .chordChef }
+    /// Every MVP game is playable.
+    var isPlayable: Bool { true }
 
     var island: IslandID {
         switch self {
@@ -231,6 +231,27 @@ final class AppModel {
         audio.send(.setDrumPattern(DrumMasks(kick: g.kick, snare: g.snare, hat: g.hat, clap: g.clap)))
         audio.send(.setTempo(profile.song.tempo))
         audio.send(.setKit(UInt8(DrumKit.allCases.firstIndex(of: profile.song.kit) ?? 0)))
+    }
+
+    /// Writes a game's creation (Melody Paint, Stack Attack) into the selected section's track of that kind.
+    func setTrackNotes(_ kind: TrackKind, _ notes: [NoteEvent]) {
+        let section = selectedSection
+        guard profile.song.sections.indices.contains(section),
+              let i = profile.song.sections[section].tracks.firstIndex(where: { $0.kind == kind }) else { return }
+        profile.song.sections[section].tracks[i].notes = notes
+        profile.song.updatedAt = Date()
+        save()
+    }
+
+    func trackNotes(_ kind: TrackKind) -> [NoteEvent] {
+        profile.song.sections[selectedSection].tracks.first { $0.kind == kind }?.notes ?? []
+    }
+
+    /// Ends a game: records results and swaps the game screen for the reward screen.
+    func endGame(_ game: GameID, results: [Bool]) {
+        let info = finishGame(game, results: results)
+        if !path.isEmpty { path.removeLast() }
+        path.append(.reward(info))
     }
 
     func setKit(_ kit: DrumKit) {

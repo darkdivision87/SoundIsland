@@ -87,6 +87,11 @@ public struct TierSpec: Sendable, Codable, Hashable {
         return value
     }
 
+    public func string(_ key: String, default value: String) -> String {
+        if case .string(let v)? = params[key] { return v }
+        return value
+    }
+
     public func strings(_ key: String) -> [String] {
         if case .strings(let v)? = params[key] { return v }
         return []
