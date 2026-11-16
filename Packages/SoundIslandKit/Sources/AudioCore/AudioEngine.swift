@@ -158,7 +158,7 @@ public final class AudioEngine: @unchecked Sendable {
         return (sampleAtTouch - start) / sampleRate
     }
 
-    nonisolated(unsafe) private static let timebase: mach_timebase_info_data_t = {
+    private static let timebase: mach_timebase_info_data_t = {
         var info = mach_timebase_info_data_t()
         mach_timebase_info(&info)
         return info
