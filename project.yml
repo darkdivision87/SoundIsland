@@ -35,6 +35,8 @@ targets:
         product: StudioModel
       - package: SoundIslandKit
         product: DesignSystem
+      - package: SoundIslandKit
+        product: ProfileStore
     info:
       path: App/Info.plist
       properties:

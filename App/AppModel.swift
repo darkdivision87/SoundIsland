@@ -4,6 +4,8 @@ import AudioCore
 import Curriculum
 import GameKitCore
 import StudioModel
+import ProfileStore
+import SwiftData
 
 /// Games that exist as code. Everything else on an island shows as "coming soon".
 enum GameID: String, Hashable, CaseIterable {
@@ -52,30 +54,6 @@ enum GameID: String, Hashable, CaseIterable {
     static func games(on island: IslandID) -> [GameID] { allCases.filter { $0.island == island } }
 }
 
-enum StudioTool: String, Codable, CaseIterable {
-    case beatBox, keys, melodyMaker, chordPads
-
-    var displayName: String {
-        switch self {
-        case .beatBox: "Beat Box"
-        case .keys: "Keys"
-        case .melodyMaker: "Melody Maker"
-        case .chordPads: "Chord Pads"
-        }
-    }
-
-    /// studioContribution ids in skills.json that unlock each tool.
-    static func unlockedBy(_ contribution: String?) -> StudioTool? {
-        switch contribution {
-        case "beat_box.unlock": .beatBox
-        case "keys.unlock": .keys
-        case "melody_maker.unlock": .melodyMaker
-        case "chord_pads.unlock": .chordPads
-        default: nil
-        }
-    }
-}
-
 struct RewardInfo: Hashable {
     let game: GameID
     let stars: Int
@@ -92,19 +70,12 @@ enum Route: Hashable {
     case latencyRig
 }
 
-/// Everything persisted for one child profile. Phase 1 stores JSON in Application Support;
-/// moving to SwiftData (spec section 9) is a tracked task in CLAUDE.md.
-struct ProfileSnapshot: Codable {
-    var nickname: String = "Player 1"
-    var avatar: String = "fox"
-    var ageBand: AgeBand = .explorers
-    var sessionIndex: Int = 0
-    var progress: [String: SkillProgress] = [:]
-    var bestStars: [String: Int] = [:]
-    var unlockedTools: Set<StudioTool> = []
-    var song = Song()
-    var quietMode = false
-    var unlockAll = false
+/// What the profile picker and parent area need to show a child, without touching SwiftData objects.
+struct ProfileSummary: Identifiable, Hashable {
+    let id: UUID
+    let nickname: String
+    let avatar: String
+    let ageBand: AgeBand
 }
 
 @MainActor
@@ -115,15 +86,43 @@ final class AppModel {
     private(set) var content: CurriculumContent?
     let audio = AudioEngine.shared
 
-    private let saveURL: URL = {
-        let dir = FileManager.default.urls(for: .applicationSupportDirectory, in: .userDomainMask)[0]
-        try? FileManager.default.createDirectory(at: dir, withIntermediateDirectories: true)
-        return dir.appendingPathComponent("profile.json")
-    }()
+    /// Up to 4 children (spec section 9). `profile` is the active child's working copy; `save()` writes it back.
+    private let store: ProfileStore
+    private var activeRecord: ChildProfile
+    private(set) var profiles: [ProfileSummary] = []
+    var activeProfileID: UUID { activeRecord.id }
+    /// Kid-facing "Who's playing?" screen. Shown at launch when more than one child shares the iPad.
+    var showProfilePicker = false
+
+    private static let activeProfileKey = "activeProfileID"
 
     init() {
+        let dir = FileManager.default.urls(for: .applicationSupportDirectory, in: .userDomainMask)[0]
+        try? FileManager.default.createDirectory(at: dir, withIntermediateDirectories: true)
+        let container: ModelContainer
+        do {
+            container = try ProfileStore.makeContainer(storeURL: dir.appendingPathComponent("Profiles.store"))
+        } catch {
+            // Never strand a child on a launch error: run with an in-memory store and say so in debug builds.
+            assertionFailure("Profile store failed to open: \(error)")
+            container = try! ProfileStore.makeContainer(inMemory: true)
+        }
+        let store = ProfileStore(container: container)
+        let record: ChildProfile
+        do {
+            try store.migrateLegacyJSON(at: dir.appendingPathComponent("profile.json"))
+            let saved = UserDefaults.standard.string(forKey: Self.activeProfileKey).flatMap(UUID.init(uuidString:))
+            record = try saved.flatMap { try store.profile(id: $0) } ?? store.ensureProfile()
+        } catch {
+            fatalError("Profile store unusable: \(error)")
+        }
+        self.store = store
+        activeRecord = record
+        profile = store.snapshot(of: record)
+
         loadContent()
-        load()
+        refreshProfiles()
+        showProfilePicker = profiles.count > 1
         profile.sessionIndex += 1
         save()
         audio.calibrationOffset = UserDefaults.standard.double(forKey: Self.calibrationKey)
@@ -247,16 +246,55 @@ final class AppModel {
         save()
     }
 
-    // MARK: Persistence
+    // MARK: Profiles
 
-    private func load() {
-        guard let data = try? Data(contentsOf: saveURL),
-              let snap = try? JSONDecoder().decode(ProfileSnapshot.self, from: data) else { return }
-        profile = snap
+    var canAddProfile: Bool { profiles.count < ProfileStore.maxProfiles }
+
+    func switchProfile(to id: UUID) {
+        guard id != activeRecord.id else { showProfilePicker = false; return }
+        save()
+        guard let record = try? store.profile(id: id) else { return }
+        activeRecord = record
+        profile = store.snapshot(of: record)
+        profile.sessionIndex += 1
+        selectedSection = 0
+        UserDefaults.standard.set(id.uuidString, forKey: Self.activeProfileKey)
+        audio.send(.stop)
+        audio.setQuietMode(profile.quietMode)
+        pushSongToAudio()
+        save()
+        showProfilePicker = false
     }
 
+    func addProfile(nickname: String, avatar: String, ageBand: AgeBand) {
+        let name = nickname.trimmingCharacters(in: .whitespacesAndNewlines)
+        _ = try? store.addProfile(ProfileSnapshot(nickname: name.isEmpty ? "Player \(profiles.count + 1)" : name,
+                                                  avatar: avatar, ageBand: ageBand))
+        refreshProfiles()
+    }
+
+    /// Parent area only. Deleting the active child switches to the first remaining one.
+    func deleteProfile(id: UUID) {
+        guard profiles.count > 1, let record = try? store.profile(id: id) else { return }
+        if id == activeRecord.id, let other = profiles.first(where: { $0.id != id }) { switchProfile(to: other.id) }
+        try? store.delete(record)
+        refreshProfiles()
+    }
+
+    private func refreshProfiles() {
+        profiles = ((try? store.allProfiles()) ?? []).map {
+            ProfileSummary(id: $0.id, nickname: $0.nickname, avatar: $0.avatar, ageBand: AgeBand(rawValue: $0.ageBandRaw) ?? .explorers)
+        }
+    }
+
+    // MARK: Persistence
+
     func save() {
-        guard let data = try? JSONEncoder().encode(profile) else { return }
-        try? data.write(to: saveURL, options: [.atomic, .completeFileProtection])
+        do {
+            try store.write(profile, to: activeRecord)
+        } catch {
+            assertionFailure("Profile save failed: \(error)")
+        }
+        refreshProfiles()
     }
 }

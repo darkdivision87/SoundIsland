@@ -215,3 +215,30 @@ public struct Song: Hashable, Sendable, Codable, Identifiable {
         third: ["Dance", "Song", "Party", "Groove", "Parade", "Jam", "March", "Lullaby"]
     )
 }
+
+// MARK: - Studio tools
+
+/// Studio tools a child unlocks by playing games (rhythm games unlock Beat Box, chord games Chord Pads).
+public enum StudioTool: String, Codable, CaseIterable, Sendable {
+    case beatBox, keys, melodyMaker, chordPads
+
+    public var displayName: String {
+        switch self {
+        case .beatBox: "Beat Box"
+        case .keys: "Keys"
+        case .melodyMaker: "Melody Maker"
+        case .chordPads: "Chord Pads"
+        }
+    }
+
+    /// studioContribution ids in skills.json that unlock each tool.
+    public static func unlockedBy(_ contribution: String?) -> StudioTool? {
+        switch contribution {
+        case "beat_box.unlock": .beatBox
+        case "keys.unlock": .keys
+        case "melody_maker.unlock": .melodyMaker
+        case "chord_pads.unlock": .chordPads
+        default: nil
+        }
+    }
+}

@@ -112,13 +112,18 @@ struct WorldMapView: View {
 
     private var topBar: some View {
         HStack {
-            Image(systemName: "pawprint.fill") // placeholder until avatar art lands
-                .font(.system(size: 34, weight: .bold))
-                .foregroundStyle(Color(hex: 0xFF9A3C))
-                .frame(width: 76, height: 76)
-                .background(Circle().fill(.white))
-                .overlay(Circle().strokeBorder(SI.Palette.ink900, lineWidth: 4))
-                .accessibilityLabel("Player: \(model.profile.nickname)")
+            let avatar = Avatar.named(model.profile.avatar)
+            Button { model.showProfilePicker = true } label: {
+                Image(systemName: avatar.symbol) // placeholder until avatar art lands
+                    .font(.system(size: 34, weight: .bold))
+                    .foregroundStyle(avatar.color)
+                    .frame(width: 76, height: 76)
+                    .background(Circle().fill(.white))
+                    .overlay(Circle().strokeBorder(SI.Palette.ink900, lineWidth: 4))
+                    .background(Circle().fill(SI.Palette.ink900).offset(y: 6))
+            }
+            .buttonStyle(.plain)
+            .accessibilityLabel("Switch player: \(model.profile.nickname) the \(avatar.name)")
             Spacer()
             Text("Sound Island")
                 .font(.system(size: 34, weight: .heavy, design: .rounded))

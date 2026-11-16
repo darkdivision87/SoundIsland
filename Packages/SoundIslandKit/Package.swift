@@ -11,6 +11,7 @@ let package = Package(
         .library(name: "Curriculum", targets: ["Curriculum"]),
         .library(name: "StudioModel", targets: ["StudioModel"]),
         .library(name: "DesignSystem", targets: ["DesignSystem"]),
+        .library(name: "ProfileStore", targets: ["ProfileStore"]),
     ],
     dependencies: [
         .package(url: "https://github.com/apple/swift-atomics.git", from: "1.2.0"),
@@ -29,11 +30,13 @@ let package = Package(
         .target(name: "Curriculum"),
         // Song / section / track / pattern model shared by Studio and games.
         .target(name: "StudioModel", dependencies: ["MusicTheory"]),
+        // Child profiles in SwiftData (spec section 9). On-device only; no CloudKit unless a parent opts in later.
+        .target(name: "ProfileStore", dependencies: ["Curriculum", "StudioModel"]),
         // Tokens, note color + shape map, components, Bop.
         .target(name: "DesignSystem", dependencies: ["MusicTheory"]),
         .testTarget(
             name: "SoundIslandKitTests",
-            dependencies: ["MusicTheory", "GameKitCore", "Curriculum", "StudioModel"]
+            dependencies: ["MusicTheory", "GameKitCore", "Curriculum", "StudioModel", "ProfileStore"]
         ),
     ]
 )

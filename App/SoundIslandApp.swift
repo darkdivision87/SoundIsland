@@ -31,6 +31,13 @@ struct RootView: View {
         }
         .font(SI.Font.body)
         .foregroundStyle(SI.Palette.ink900)
+        .fullScreenCover(isPresented: $model.showProfilePicker) {
+            ProfilePickerView()
+                .font(SI.Font.body)
+                .foregroundStyle(SI.Palette.ink900)
+                .statusBarHidden()
+                .persistentSystemOverlays(.hidden)
+        }
     }
 
     @ViewBuilder
