@@ -10,7 +10,7 @@ struct WorldMapView: View {
     private struct Spot { let island: IslandID; let x: CGFloat; let y: CGFloat; let color: Color; let emblem: String }
 
     private let spots: [Spot] = [
-        Spot(island: .beatBeach, x: 40, y: 440, color: Color(hex: 0xFF9A3C), emblem: "drum"),
+        Spot(island: .beatBeach, x: 40, y: 440, color: Color(hex: 0xFF9A3C), emblem: "cylinder"), // no "drum" SF Symbol; cylinder matches the drum outline in Main.dc.html
         Spot(island: .pitchPeaks, x: 230, y: 180, color: Color(hex: 0x22C3C9), emblem: "mountain.2"),
         Spot(island: .melodyJungle, x: 430, y: 430, color: Color(hex: 0x3DD68C), emblem: "leaf"),
         Spot(island: .harmonyHarbor, x: 620, y: 160, color: Color(hex: 0x4D8DFF), emblem: "sailboat"),
@@ -83,15 +83,31 @@ struct WorldMapView: View {
         .accessibilityLabel(unlocked ? "\(spot.island.displayName), \(stars) of 3 stars" : "\(spot.island.displayName), locked")
     }
 
-    private var bop: some View {
+    @ViewBuilder private var bop: some View {
         let current = spots.last { model.isUnlocked($0.island) } ?? spots[0]
-        return HStack(alignment: .bottom, spacing: 6) {
-            BopView(mood: .idle, size: 96)
-            SpeechBubble(current.island == .harmonyHarbor ? "Let's cook some chords!" : "Tap an island to play!")
-                .padding(.bottom, 52)
+        let line = current.island == .harmonyHarbor ? "Let's cook some chords!" : "Tap an island to play!"
+        if current.y < 300 {
+            // Top-row island: Bop sits up and to the right, as in Main.dc.html (Harmony Harbor -> 676, 48).
+            HStack(alignment: .bottom, spacing: 6) {
+                BopView(mood: .idle, size: 96)
+                // Capped so the bubble wraps instead of running under the star counter.
+                SpeechBubble(line).multilineTextAlignment(.center)
+                    .fixedSize(horizontal: false, vertical: true)
+                    .frame(width: 200)
+                    .padding(.bottom, 52)
+            }
+            .offset(x: current.x + 56, y: current.y - 112)
+            .allowsHitTesting(false)
+        } else {
+            // Bottom-row island: stack bubble over Bop in the open column above it so it never covers a neighbor.
+            VStack(spacing: 10) {
+                SpeechBubble(line).multilineTextAlignment(.center).frame(maxWidth: 190)
+                BopView(mood: .idle, size: 96)
+            }
+            .frame(width: 190, height: current.y - 4, alignment: .bottom)
+            .offset(x: current.x)
+            .allowsHitTesting(false)
         }
-        .position(x: min(current.x + 210, 1000), y: max(current.y - 30, 110))
-        .allowsHitTesting(false)
     }
 
     private var topBar: some View {
@@ -149,10 +165,17 @@ struct WorldMapView: View {
 
     private func dockButton(_ title: String, icon: String, active: Bool, action: @escaping () -> Void) -> some View {
         Button(action: action) {
-            Label(title, systemImage: icon).labelStyle(.titleAndIcon).frame(width: 120)
+            Label(title, systemImage: icon).labelStyle(.titleAndIcon).lineLimit(1).frame(width: 160)
         }
-        .buttonStyle(active ? BigButtonStyle.primary : BigButtonStyle.secondary)
+        .buttonStyle(dockStyle(active: active))
         .accessibilityAddTraits(active ? .isSelected : [])
+    }
+
+    /// Dock buttons are 176 pt wide in Main.dc.html; the default 28 pt padding would wrap "Stickers".
+    private func dockStyle(active: Bool) -> BigButtonStyle {
+        var style = active ? BigButtonStyle.primary : BigButtonStyle.secondary
+        style.horizontalPadding = 8
+        return style
     }
 }
 

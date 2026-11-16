@@ -7,3 +7,4 @@ DerivedData/
 Packages/SoundIslandKit/.build/
 Packages/SoundIslandKit/.swiftpm/
 *.ipa
+build/

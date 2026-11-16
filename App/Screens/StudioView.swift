@@ -197,7 +197,7 @@ struct StudioView: View {
     private func cell(row: DrumRow, step: Int, on: Color, off: Color) -> some View {
         let isOn = model.beatGrid.isOn(row, step: step)
         let isHead = playing && playhead.map { $0 / stride == step / stride } == true
-        let width: CGFloat = coarse ? 96 : 50
+        let width: CGFloat = coarse ? 103 : 50 // both fill the 986 pt panel in Studio.dc.html
         let height: CGFloat = coarse ? 64 : 50
         return Button {
             var g = model.beatGrid

@@ -136,9 +136,11 @@ public struct BigButtonStyle: ButtonStyle, Sendable {
     public var foreground: Color
     public var height: CGFloat
     public var cornerRadius: CGFloat
+    public var horizontalPadding: CGFloat
 
     public init(fill: Color = SI.Palette.bop, lip: Color = SI.Palette.bopDeep, foreground: Color = .white,
-                height: CGFloat = SI.Metrics.bigButtonHeight, cornerRadius: CGFloat = 32) {
+                height: CGFloat = SI.Metrics.bigButtonHeight, cornerRadius: CGFloat = 32, horizontalPadding: CGFloat = 28) {
+        self.horizontalPadding = horizontalPadding
         self.fill = fill
         self.lip = lip
         self.foreground = foreground
@@ -155,7 +157,7 @@ public struct BigButtonStyle: ButtonStyle, Sendable {
         configuration.label
             .font(SI.Font.headline)
             .foregroundStyle(foreground)
-            .padding(.horizontal, 28)
+            .padding(.horizontal, horizontalPadding)
             .frame(minHeight: height)
             .background(
                 RoundedRectangle(cornerRadius: cornerRadius, style: .continuous)

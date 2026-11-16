@@ -233,7 +233,7 @@ struct CrabShape: View {
                 ctx.fill(eye, with: .color(.white)); ctx.stroke(eye, with: .color(ink), lineWidth: 3)
                 ctx.fill(Path(ellipseIn: CGRect(x: w * x - 4, y: h * 0.06 + 5, width: 8, height: 8)), with: .color(ink))
             }
-            for x in [0.02, 0.86] {
+            for x in [0.02, 0.84] {
                 let claw = Path(ellipseIn: CGRect(x: w * x, y: h * 0.28, width: w * 0.14, height: h * 0.26))
                 ctx.fill(claw, with: .color(Color(hex: 0xFF5A5F))); ctx.stroke(claw, with: .color(ink), lineWidth: 4)
             }
