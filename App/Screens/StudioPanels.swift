@@ -98,10 +98,11 @@ struct KeysPanel: View {
             toolSwitch
             Button(action: toggleRecording) {
                 Label(recording ? "Stop" : "Record", systemImage: recording ? "stop.fill" : "record.circle")
+                    .lineLimit(1).fixedSize()
             }
             .buttonStyle(BigButtonStyle(fill: recording ? SI.Palette.tryAgain : .white, lip: SI.Palette.ink900,
                                         foreground: SI.Palette.ink900, height: model.minTarget, cornerRadius: 24, horizontalPadding: 16))
-            Button { model.setTrackNotes(.melody, []) } label: { Label("Clear", systemImage: "eraser.fill") }
+            Button { model.setTrackNotes(.melody, []) } label: { Label("Clear", systemImage: "eraser.fill").lineLimit(1).fixedSize() }
                 .buttonStyle(BigButtonStyle(fill: .white, lip: SI.Palette.ink900, foreground: SI.Palette.ink900,
                                             height: model.minTarget, cornerRadius: 24, horizontalPadding: 16))
         }
@@ -223,7 +224,7 @@ struct ChordPadsPanel: View {
             VStack(alignment: .leading, spacing: 18) {
                 HStack(spacing: 12) {
                     ForEach(0..<bars, id: \.self) { b in barSlot(b) }
-                    Button { write(Array(repeating: nil, count: bars)) } label: { Label("Clear", systemImage: "eraser.fill") }
+                    Button { write(Array(repeating: nil, count: bars)) } label: { Label("Clear", systemImage: "eraser.fill").lineLimit(1).fixedSize() }
                         .buttonStyle(BigButtonStyle(fill: .white, lip: SI.Palette.ink900, foreground: SI.Palette.ink900,
                                                     height: model.minTarget, cornerRadius: 24, horizontalPadding: 16))
                 }
