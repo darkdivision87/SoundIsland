@@ -5,11 +5,10 @@ You are continuing a handoff. Read this file, then `docs/SPEC.md`, then look at 
 - Spec doc: https://claude.ai/artifact/BC2NkpqRH4fMhDPMbWxmDe
 - Hi-fi UI canvas: https://claude.ai/artifact/9B5bRwsrXnRaCeRtCDezYU
 
-## IMPORTANT: this code has never been compiled
+## Build state (2026-11-15)
 
-The first pass was written in a Linux sandbox with no Swift toolchain or Xcode. Expect a handful of
-compile errors (mostly Swift 6 strict-concurrency and SwiftUI type-checking). Your FIRST task is to make
-it build and pass tests without changing behavior. Fix forward; don't rewrite modules.
+The code now compiles cleanly (no warnings) with Xcode 27.2 / Swift 6.4 in Swift 6 mode, `swift test` passes
+(39 tests), and the app runs in the iPad Pro 11-inch (M5) simulator. The first pass needed no concurrency fixes.
 
 ## Build
 
@@ -22,9 +21,9 @@ cd Packages/SoundIslandKit && swift test
 # 2. Generate and open the app project
 cd ../.. && xcodegen generate && open SoundIsland.xcodeproj
 
-# 3. Build for an iPad simulator from the CLI
+# 3. Build for an iPad simulator from the CLI (use `xcrun simctl list devices available` for names)
 xcodebuild -project SoundIsland.xcodeproj -scheme SoundIsland \
-  -destination 'platform=iOS Simulator,name=iPad Pro 11-inch (M4)' build
+  -destination 'platform=iOS Simulator,name=iPad Pro 11-inch (M5)' -derivedDataPath build/DD build
 ```
 
 Set your Apple Developer Team in the target's Signing settings (DEVELOPMENT_TEAM in project.yml is blank).
@@ -37,17 +36,23 @@ project.yml                       XcodeGen spec (iPad only, iPadOS 17+, landscap
 App/                              SwiftUI app target
   SoundIslandApp.swift            entry, RootView navigation, DesignCanvas (scales 1194x834 design to any iPad)
   AppModel.swift                  @Observable app state, progress, rewards, unlocks, JSON persistence
-  Screens/                        WorldMap, Island, Studio (Beat Box), Reward, ParentGate + ParentArea
+  Screens/                        WorldMap, Island, Studio (Beat Box), Reward, ParentGate + ParentArea,
+                                  ProfilePicker ("Who's playing?"), LatencyRig (parent area, behind the gate)
   Games/                          CrabTapView, ChordChefView (phase-1 vertical slice)
   Support/TapCaptureView.swift    UIKit touch capture with hardware timestamps for rhythm judging
+  Support/Narrator.swift          Bop's voice (AVSpeechSynthesizer stand-in), `.narrates(_:)`, ReplayButton
+  Support/Avatars.swift           placeholder SF Symbol avatars for child profiles
   Resources/Content/skills.json   curriculum skill nodes for islands 1-4 (schemaVersion 1)
 Packages/SoundIslandKit/          local Swift package, one library per module from spec section 8
   MusicTheory                     Pitch, PitchClass, Interval, Scale, Key, Triad, Roman numerals
   AudioCore                       AVAudioEngine + AVAudioSourceNode renderer, SPSC command queue, synth voices,
                                   16-step sequencer, metronome, audio clock, latency-compensated tap timing
-  GameKitCore                     TimingJudge, BeatSchedule, Stars, RoundFlow (hints), ChordChefRules
+  GameKitCore                     TimingJudge, BeatSchedule, Stars, RoundFlow (hints), ChordChefRules,
+                                  LatencyCalibration (rig math), NarrationPolicy (when Bop speaks)
   Curriculum                      AgeBand, SkillNode/TierSpec JSON, AdaptiveDifficulty, Mastery, SpacedRepetition, IslandUnlock
-  StudioModel                     Song, Section, Track, BeatGrid (bitmask), DrumKit, NoteEvent (96 PPQN)
+  StudioModel                     Song, Section, Track, BeatGrid (bitmask), DrumKit, NoteEvent (96 PPQN), StudioTool
+  ProfileStore                    SwiftData ChildProfile + SkillProgressRecord, ProfileSnapshot (working copy and
+                                  phase 1 JSON migration source), 4-child cap, one-time profile.json import
   DesignSystem                    color tokens, SF Pro Rounded type scale, note color+shape map, BigButtonStyle,
                                   NotePad, StarRow, SpeechBubble, FeedbackChip, BopView (placeholder for Rive)
   Tests/SoundIslandKitTests       unit tests for everything above except AudioCore and DesignSystem
@@ -86,20 +91,43 @@ Done in this first pass (unverified build):
 - [x] World Map, Island screen, Reward, Parent gate + area, Studio with working Beat Box
 - [x] Crab Tap (5 rounds x 16 beats, adaptive tier, tempo-change tier 3)
 - [x] Chord Chef (8 orders, tiers 1-3, drag or tap-to-place, glow hint after 2 misses, slow arpeggio after 3)
+- [x] Task 1: builds clean, tests green, runs in the simulator. Checked end to end there: World Map, Crab Tap (beats
+      arrive from the audio clock, taps judged "Great!"), Chord Chef (correct and orange "Try again!" paths), Studio,
+      parent gate. Layout fixes against design/screens: dock width, Bop bubble placement, Beat Beach emblem
+      (no "drum" SF Symbol, uses "cylinder"), crab claw clipping, Explorer Beat Box cell width.
+- [x] Task 2: latency rig (Parent area > Check audio latency). Saves `calibrationOffset` per device in UserDefaults.
+      Shows tap-to-sound estimate = touch-to-render buffer + reported output latency. Simulator says ~25 ms;
+      NOT yet measured on a real iPad.
+- [x] Task 4: SwiftData profiles, up to 4 children, kid-facing picker (shown at launch when >1 child, and from the map
+      avatar), add/delete in the parent area. Migration from profile.json verified in the simulator.
+      Not yet modeled as entities: GameSession, RoundResult, ParentSettings; Song is a JSON blob on ChildProfile.
+- [x] Task 6: every instruction voiced (map, picker, Crab Tap, Chord Chef orders, Studio hint, Reward) with a replay
+      button at the age band's touch-target size. Recorded VO still to do.
+
+Known issues / open questions:
+- Task 3 (mHostTime semantics) and the 20 ms tap-to-sound gate need a real iPad; the simulator can't answer them.
+- Task 5 conflicts with rule 3: the Rive runtime is a third-party SDK. Decide whether it is acceptable (no data
+  collection, but still third-party code) or animate Bop natively; either way it needs illustrator art.
+- Crab Tap speaks "Tap on every beat!" as judging starts, over the clicks. Playtest it; consider speaking during
+  the count-in instead.
+- Parent-area buttons inherit the app's ink foreground, so they don't look tappable and destructive actions aren't
+  tinted. Cosmetic, parent-only.
+- Simulator driving tip: zero-length injected taps don't trigger SwiftUI Buttons or TapCaptureView reliably; use
+  ~0.15 s taps. Screenshots can lag one frame behind.
 
 ## Next tasks, in order
 
-1. Make it compile; `swift test` green; app runs in the iPad simulator. Fix Swift 6 concurrency errors properly
+1. DONE. Make it compile; `swift test` green; app runs in the iPad simulator. Fix Swift 6 concurrency errors properly
    (prefer `@MainActor` on UI types and `Sendable` value types over `@unchecked` / `nonisolated(unsafe)`).
-2. Latency rig (spec section 13): a debug screen that plays clicks and records taps, reports mean tap offset, and
+2. DONE (device run pending). Latency rig (spec section 13): a debug screen that plays clicks and records taps, reports mean tap offset, and
    writes `AudioEngine.calibrationOffset`. Target tap-to-sound under 20 ms on iPad 9th gen.
-3. Verify `AudioEngine.transportSeconds` latency math on device: confirm whether `mHostTime` in the render callback is
+3. NEEDS A REAL iPAD. Verify `AudioEngine.transportSeconds` latency math on device: confirm whether `mHostTime` in the render callback is
    buffer-start or output time on iPadOS, and adjust the compensation so a perfectly timed tap measures ~0 ms.
-4. Move persistence from `profile.json` to SwiftData (spec section 9 entities), keeping `ProfileSnapshot` as the migration source.
+4. DONE. Move persistence from `profile.json` to SwiftData (spec section 9 entities), keeping `ProfileSnapshot` as the migration source.
    Support up to 4 child profiles + a profile picker screen.
-5. Bop as a Rive state machine (idle, listen, sing, cheer, wobble, sleep) replacing `BopView`; crabs and islands as real art.
-6. Spoken instructions: every on-screen instruction voiced (record VO later; use AVSpeechSynthesizer as a stand-in), replay icon next to it.
-7. Wave Rider (design/screens/WaveRider.dc.html) and Drum Circle to finish Beat Beach.
+5. BLOCKED (third-party SDK rule, needs art; see Known issues). Bop as a Rive state machine (idle, listen, sing, cheer, wobble, sleep) replacing `BopView`; crabs and islands as real art.
+6. DONE (recorded VO pending). Spoken instructions: every on-screen instruction voiced (record VO later; use AVSpeechSynthesizer as a stand-in), replay icon next to it.
+7. NEXT. Wave Rider (design/screens/WaveRider.dc.html) and Drum Circle to finish Beat Beach.
 8. Remaining MVP games in curriculum order: Bird Song, Pitch Climb, Key Hunt, Echo Monkeys, Vine Swing, Melody Paint, Mood Boats, Stack Attack.
 9. Studio tools: Keys, Melody Maker, Chord Pads (track rail unlocks), Mixer + FX stickers (pulled forward for 8-10), section copy/arrangement, Concert mode.
 10. Accessibility pass: VoiceOver on every control, Switch Control, Reduce Motion, Calm theme, left-handed Studio.
