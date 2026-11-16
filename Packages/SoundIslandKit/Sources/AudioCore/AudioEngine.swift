@@ -10,6 +10,39 @@ public struct DrumMasks: BitwiseCopyable, Sendable, Equatable {
     }
 }
 
+/// One note or drum hit in the song loop (Studio tracks, Concert mode). Bitwise-copyable.
+public struct NoteSlot: BitwiseCopyable, Sendable, Equatable {
+    /// Sixteenth-note step within the loop.
+    public var step: UInt16
+    /// MIDI note, or DrumSound raw value when `instrument == NoteSlot.drum`.
+    public var midi: UInt8
+    /// Track index for gain: 0 beats, 1 bass, 2 chords, 3 melody.
+    public var track: UInt8
+    /// Instrument raw value, or `NoteSlot.drum`.
+    public var instrument: UInt8
+    public var velocity: Float
+
+    public static let drum: UInt8 = 255
+
+    public init(step: UInt16, midi: UInt8, track: UInt8, instrument: UInt8, velocity: Float) {
+        self.step = step
+        self.midi = midi
+        self.track = track
+        self.instrument = instrument
+        self.velocity = velocity
+    }
+}
+
+/// Master effect "stickers" (Mixer). Bits of `AudioCommand.setFX`.
+public struct FXStickers: OptionSet, Sendable, Hashable {
+    public let rawValue: UInt8
+    public init(rawValue: UInt8) { self.rawValue = rawValue }
+    public static let echo = FXStickers(rawValue: 1 << 0)
+    public static let underwater = FXStickers(rawValue: 1 << 1)
+    public static let robot = FXStickers(rawValue: 1 << 2)
+    public static let wobble = FXStickers(rawValue: 1 << 3)
+}
+
 /// Commands from the UI to the render thread. Trivial enum: no payload needs ARC.
 public enum AudioCommand: BitwiseCopyable, Sendable {
     case noteOn(midi: UInt8, velocity: Float, instrument: Instrument)
@@ -24,6 +57,13 @@ public enum AudioCommand: BitwiseCopyable, Sendable {
     /// Play the drum pattern only on bars where `bar % period == phase` (call and response games).
     /// `.play` resets this to every bar, so send it after `.play`.
     case setPatternBars(period: UInt8, phase: UInt8)
+    /// Song loop: remove every slot, add slots, set the loop length in sixteenth steps (0 turns slots off).
+    case clearSlots
+    case addSlot(NoteSlot)
+    case setLoopSteps(UInt16)
+    /// Track volume 0...1 (0 = muted). Applies to notes triggered from then on.
+    case setTrackGain(track: UInt8, gain: Float)
+    case setFX(UInt8)
     case stop
     case allNotesOff
 }
@@ -36,7 +76,8 @@ public final class AudioEngine: @unchecked Sendable {
     public let sampleRate: Double = 48_000
     private let engine = AVAudioEngine()
     private var sourceNode: AVAudioSourceNode?
-    private let commands = SPSCQueue<AudioCommand>(capacity: 512)
+    /// Large enough for a whole Concert-mode song (4 sections x 8 bars of slots) in one go.
+    private let commands = SPSCQueue<AudioCommand>(capacity: 4096)
     private let renderer: Renderer
     private var observers: [NSObjectProtocol] = []
 
@@ -127,6 +168,14 @@ public final class AudioEngine: @unchecked Sendable {
 
     public func playDrum(_ sound: DrumSound, velocity: Float = 0.9) { send(.drum(sound, velocity: velocity)) }
 
+    /// Replaces the song loop. Main thread only; the render thread picks it up at the next buffer.
+    public func loadLoop(_ slots: [NoteSlot], steps: Int) {
+        send(.setLoopSteps(0))
+        send(.clearSlots)
+        for slot in slots.prefix(Renderer.maxSlots) { send(.addSlot(slot)) }
+        send(.setLoopSteps(UInt16(clamping: steps)))
+    }
+
     /// Quiet mode (parent setting) = -10 dB.
     public func setQuietMode(_ on: Bool) { send(.setMasterGain(on ? 0.316 : 1)) }
 
@@ -206,6 +255,23 @@ final class Renderer: @unchecked Sendable {
     private var playPattern = true
     private var patternPeriod = 1
     private var patternPhase = 0
+
+    // Song loop (preallocated; never grows on the audio thread)
+    static let maxSlots = 2048
+    private let slots: UnsafeMutablePointer<NoteSlot>
+    private var slotCount = 0
+    private var loopSteps = 0
+    private var trackGain: (Float, Float, Float, Float) = (1, 1, 1, 1)
+
+    // Master FX stickers
+    private var fx: UInt8 = 0
+    private let echoBuffer: UnsafeMutablePointer<Float>
+    private let echoLength: Int
+    private var echoIndex = 0
+    private var lowpassState: Float = 0
+    private var holdSample: Float = 0
+    private var holdCounter = 0
+    private var wobblePhase: Float = 0
     private var tempo: Double = 96
     private var nextStepSample: Double = 0
     private var stepIndex = 0
@@ -226,12 +292,21 @@ final class Renderer: @unchecked Sendable {
         self.sampleRate = sampleRate
         voices = .allocate(capacity: Self.maxVoices)
         voices.initialize(repeating: Voice(), count: Self.maxVoices)
+        slots = .allocate(capacity: Self.maxSlots)
+        slots.initialize(repeating: NoteSlot(step: 0, midi: 0, track: 0, instrument: 0, velocity: 0), count: Self.maxSlots)
+        echoLength = Int(sampleRate * 0.3)
+        echoBuffer = .allocate(capacity: echoLength)
+        echoBuffer.initialize(repeating: 0, count: echoLength)
         limiter.configure(sampleRate: sampleRate)
         lastBeat.write(-1, 0)
         lastTrigger.write(0, 0)
     }
 
-    deinit { voices.deallocate() }
+    deinit {
+        voices.deallocate()
+        slots.deallocate()
+        echoBuffer.deallocate()
+    }
 
     private var samplesPerStep: Double { Double(sampleRate) * 60 / (tempo * 4) }
 
@@ -253,6 +328,7 @@ final class Renderer: @unchecked Sendable {
                 mix += voices[v].nextSample(sampleRate: sampleRate)
             }
             smoothedGain += (masterGain - smoothedGain) * 0.001
+            if fx != 0 { mix = applyFX(mix) }
             let out = limiter.process(mix * 0.5 * smoothedGain)
             left[i] = out
             right?[i] = out
@@ -263,10 +339,24 @@ final class Renderer: @unchecked Sendable {
     private func fireStep() {
         let step = stepIndex % 16
         if playPattern, (stepIndex / 16) % patternPeriod == patternPhase {
-            if pattern.kick & (1 << UInt16(step)) != 0 { trigger(.kick, velocity: 0.95) }
-            if pattern.snare & (1 << UInt16(step)) != 0 { trigger(.snare, velocity: 0.8) }
-            if pattern.hat & (1 << UInt16(step)) != 0 { trigger(.hat, velocity: step % 4 == 0 ? 0.55 : 0.4) }
-            if pattern.clap & (1 << UInt16(step)) != 0 { trigger(.clap, velocity: 0.75) }
+            let g = trackGain.0
+            if pattern.kick & (1 << UInt16(step)) != 0 { trigger(.kick, velocity: 0.95 * g) }
+            if pattern.snare & (1 << UInt16(step)) != 0 { trigger(.snare, velocity: 0.8 * g) }
+            if pattern.hat & (1 << UInt16(step)) != 0 { trigger(.hat, velocity: (step % 4 == 0 ? 0.55 : 0.4) * g) }
+            if pattern.clap & (1 << UInt16(step)) != 0 { trigger(.clap, velocity: 0.75 * g) }
+        }
+        if loopSteps > 0 {
+            let loopStep = UInt16(stepIndex % loopSteps)
+            for i in 0..<slotCount where slots[i].step == loopStep {
+                let s = slots[i]
+                let v = s.velocity * gain(forTrack: s.track)
+                guard v > 0 else { continue }
+                if s.instrument == NoteSlot.drum {
+                    if let d = DrumSound(rawValue: s.midi) { trigger(d, velocity: v) }
+                } else {
+                    startTone(midi: s.midi, velocity: v, instrument: Instrument(rawValue: s.instrument) ?? .marimba)
+                }
+            }
         }
         if step % 4 == 0 {
             let beat = stepIndex / 4
@@ -313,6 +403,22 @@ final class Renderer: @unchecked Sendable {
             transportStartSample.store(sampleTime, ordering: .relaxed)
             lastBeat.write(-1, sampleTime)
             playing.store(true, ordering: .releasing) // publishes the lastBeat reset above
+        case .clearSlots:
+            slotCount = 0
+        case let .addSlot(slot):
+            if slotCount < Self.maxSlots { slots[slotCount] = slot; slotCount += 1 }
+        case let .setLoopSteps(n):
+            loopSteps = Int(n)
+        case let .setTrackGain(track, g):
+            let v = min(max(g, 0), 1)
+            switch track {
+            case 0: trackGain.0 = v
+            case 1: trackGain.1 = v
+            case 2: trackGain.2 = v
+            default: trackGain.3 = v
+            }
+        case let .setFX(mask):
+            fx = mask
         case let .setPatternBars(period, phase):
             patternPeriod = max(1, Int(period))
             patternPhase = Int(phase) % patternPeriod
@@ -323,6 +429,43 @@ final class Renderer: @unchecked Sendable {
         case .allNotesOff:
             for v in 0..<Self.maxVoices { voices[v].releasing = true }
         }
+    }
+
+    @inline(__always)
+    private func gain(forTrack t: UInt8) -> Float {
+        switch t {
+        case 0: trackGain.0
+        case 1: trackGain.1
+        case 2: trackGain.2
+        default: trackGain.3
+        }
+    }
+
+    /// Master FX stickers. Cheap, allocation-free, one sample at a time.
+    @inline(__always)
+    private func applyFX(_ input: Float) -> Float {
+        var x = input
+        if fx & FXStickers.underwater.rawValue != 0 {
+            lowpassState += (x - lowpassState) * 0.06
+            x = lowpassState * 1.4
+        }
+        if fx & FXStickers.robot.rawValue != 0 {
+            if holdCounter == 0 { holdSample = (x * 12).rounded() / 12 }
+            holdCounter = (holdCounter + 1) % 6
+            x = holdSample
+        }
+        if fx & FXStickers.wobble.rawValue != 0 {
+            wobblePhase += 5 / sampleRate
+            if wobblePhase >= 1 { wobblePhase -= 1 }
+            x *= 0.65 + 0.35 * sinf(2 * .pi * wobblePhase)
+        }
+        if fx & FXStickers.echo.rawValue != 0 {
+            let delayed = echoBuffer[echoIndex]
+            echoBuffer[echoIndex] = x + delayed * 0.35
+            echoIndex = (echoIndex + 1) % echoLength
+            x += delayed * 0.45
+        }
+        return x
     }
 
     /// Find a free voice, else steal the quietest one.

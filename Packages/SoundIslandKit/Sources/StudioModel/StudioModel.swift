@@ -178,6 +178,10 @@ public struct Song: Hashable, Sendable, Codable, Identifiable {
     public var tempo: Double
     public var key: Key
     public var swing: Bool
+    /// Mixer FX stickers that are on (FX raw names). Optional so songs saved before the Mixer still decode.
+    public var fxStickers: [String]?
+    /// Chord Pads playing style (ChordStyle raw value).
+    public var chordStyle: String?
     public var kit: DrumKit
     public var sections: [Section]
     /// Arrangement as indices into `sections` ("A B A").

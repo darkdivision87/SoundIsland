@@ -231,16 +231,89 @@ final class AppModel {
         audio.send(.setDrumPattern(DrumMasks(kick: g.kick, snare: g.snare, hat: g.hat, clap: g.clap)))
         audio.send(.setTempo(profile.song.tempo))
         audio.send(.setKit(UInt8(DrumKit.allCases.firstIndex(of: profile.song.kit) ?? 0)))
+        // Bass, chords and melody of the selected section loop on the render thread; beats use the drum masks.
+        let section = profile.song.sections[selectedSection]
+        audio.loadLoop(Self.slots(section.playback(includeBeats: false)), steps: section.steps)
+        pushMixToAudio()
+    }
+
+    /// Track volumes/mutes and FX stickers (Mixer).
+    func pushMixToAudio() {
+        for track in profile.song.sections[selectedSection].tracks {
+            audio.send(.setTrackGain(track: UInt8(track.kind.index), gain: track.muted ? 0 : track.volume / 0.8))
+        }
+        var fx = FXStickers()
+        for name in profile.song.fxStickers ?? [] { if let f = FXSticker(rawValue: name) { fx.insert(f.option) } }
+        audio.send(.setFX(fx.rawValue))
+    }
+
+    static func slots(_ loop: PlaybackLoop) -> [NoteSlot] {
+        loop.hits.map { hit in
+            switch hit.sound {
+            case .drum(let row):
+                let sound: DrumSound = switch row { case .kick: .kick; case .snare: .snare; case .hat: .hat; case .clap: .clap }
+                return NoteSlot(step: UInt16(hit.step), midi: sound.rawValue, track: UInt8(hit.track.index),
+                                instrument: NoteSlot.drum, velocity: hit.velocity)
+            case let .note(midi, instrumentID):
+                return NoteSlot(step: UInt16(hit.step), midi: UInt8(clamping: midi), track: UInt8(hit.track.index),
+                                instrument: instrument(for: instrumentID).rawValue, velocity: hit.velocity)
+            }
+        }
+    }
+
+    static func instrument(for id: String) -> Instrument {
+        switch id {
+        case "piano": .softPiano
+        case "bass_buddy": .bass
+        case "music_box": .musicBox
+        case "lead": .synthLead
+        default: .marimba
+        }
+    }
+
+    // MARK: Studio tracks and mixer
+
+    func isTrackUnlocked(_ kind: TrackKind) -> Bool {
+        if profile.unlockAll { return kind != .bass }
+        switch kind {
+        case .beats: return true
+        case .melody: return profile.unlockedTools.contains(.keys) || profile.unlockedTools.contains(.melodyMaker)
+        case .chords: return profile.unlockedTools.contains(.chordPads)
+        case .bass: return false // Bass Buddy comes with Bass Caves (phase 2)
+        }
+    }
+
+    func isToolUnlocked(_ tool: StudioTool) -> Bool { profile.unlockAll || tool == .beatBox || profile.unlockedTools.contains(tool) }
+
+    func updateTrack(_ kind: TrackKind, _ change: (inout Track) -> Void) {
+        let section = selectedSection
+        guard let i = profile.song.sections[section].tracks.firstIndex(where: { $0.kind == kind }) else { return }
+        change(&profile.song.sections[section].tracks[i])
+        profile.song.updatedAt = Date()
+        pushSongToAudio()
+        save()
+    }
+
+    func track(_ kind: TrackKind) -> Track? { profile.song.sections[selectedSection].tracks.first { $0.kind == kind } }
+
+    func toggleFX(_ sticker: FXSticker) {
+        var on = Set(profile.song.fxStickers ?? [])
+        if on.contains(sticker.rawValue) { on.remove(sticker.rawValue) } else { on.insert(sticker.rawValue) }
+        profile.song.fxStickers = on.sorted()
+        pushMixToAudio()
+        save()
+    }
+
+    func editSong(_ change: (inout Song) -> Void) {
+        change(&profile.song)
+        if !profile.song.sections.indices.contains(selectedSection) { selectedSection = 0 }
+        pushSongToAudio()
+        save()
     }
 
     /// Writes a game's creation (Melody Paint, Stack Attack) into the selected section's track of that kind.
     func setTrackNotes(_ kind: TrackKind, _ notes: [NoteEvent]) {
-        let section = selectedSection
-        guard profile.song.sections.indices.contains(section),
-              let i = profile.song.sections[section].tracks.firstIndex(where: { $0.kind == kind }) else { return }
-        profile.song.sections[section].tracks[i].notes = notes
-        profile.song.updatedAt = Date()
-        save()
+        updateTrack(kind) { $0.notes = notes }
     }
 
     func trackNotes(_ kind: TrackKind) -> [NoteEvent] {
@@ -326,5 +399,28 @@ final class AppModel {
             assertionFailure("Profile save failed: \(error)")
         }
         refreshProfiles()
+    }
+}
+
+/// Mixer FX stickers, stored by name in the song.
+enum FXSticker: String, CaseIterable, Identifiable {
+    case echo, underwater, robot, wobble
+    var id: String { rawValue }
+    var option: FXStickers {
+        switch self {
+        case .echo: .echo
+        case .underwater: .underwater
+        case .robot: .robot
+        case .wobble: .wobble
+        }
+    }
+    var displayName: String { rawValue.capitalized }
+    var icon: String {
+        switch self {
+        case .echo: "mountain.2.fill"
+        case .underwater: "drop.fill"
+        case .robot: "cpu"
+        case .wobble: "waveform.path"
+        }
     }
 }
